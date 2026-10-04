@@ -16,7 +16,8 @@ const RU_MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', '
 /** When a track was made, in words people use: "Today, 17:54", "Yesterday, 09:10", "30 Sep, 21:33", with the
  *  year added only for an older year. `full` is the exact timestamp for a tooltip. */
 export function formatCreated(timestamp: number): { label: string; full: string } {
-  const lang = String(i18n.global.locale.value) === 'ru' ? 'ru-RU' : 'en-US'
+  const loc = String(i18n.global.locale.value)
+  const lang = loc === 'ru' ? 'ru-RU' : loc === 'hu' ? 'hu-HU' : 'en-US'
   const when = new Date(timestamp)
   const now = new Date()
   const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()

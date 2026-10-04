@@ -28,7 +28,8 @@ async function remove(id: number): Promise<void> {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString(locale.value === 'ru' ? 'ru-RU' : 'en-US')
+  const loc = locale.value === 'ru' ? 'ru-RU' : locale.value === 'hu' ? 'hu-HU' : 'en-US'
+  return new Date(iso).toLocaleString(loc)
 }
 
 onMounted(load)

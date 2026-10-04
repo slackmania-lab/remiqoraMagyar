@@ -16,9 +16,16 @@ const helpOpen = ref(false)
 const HELP_SECTIONS = ['what', 'engines', 'ace', 'yue', 'lora', 'stems', 'editor', 'library', 'local'] as const
 
 function toggleLocale() {
-  const next: LocaleCode = currentLocale() === 'ru' ? 'en' : 'ru'
+  const order: LocaleCode[] = ['hu', 'en', 'ru']
+  const next: LocaleCode = order[(order.indexOf(currentLocale()) + 1) % order.length]
   setLocale(next)
   locale.value = next
+}
+
+function localeLabel(): string {
+  const order: LocaleCode[] = ['hu', 'en', 'ru']
+  const next: LocaleCode = order[(order.indexOf(currentLocale()) + 1) % order.length]
+  return next.toUpperCase()
 }
 
 // The header's height (it wraps on a phone) as --header-h, so sticky bars below it know where to stop.
@@ -88,7 +95,7 @@ async function onSelect(id: ModelId) {
           class="min-h-9 rounded-lg border border-border bg-panel-2 px-3 py-2 text-xs font-semibold text-text-dim hover:text-text"
           @click="toggleLocale"
         >
-          {{ locale === 'ru' ? 'EN' : 'RU' }}
+          {{ localeLabel() }}
         </button>
         <button
           type="button"
