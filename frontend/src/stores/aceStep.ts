@@ -2,6 +2,7 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 import * as api from '../api/aceStep'
 import type { GenerateMusicRequest } from '../api/aceStep'
 import * as tracksApi from '../api/tracks'
+import { useOrchestratorStore } from './orchestrator'
 import type { JobStatus } from '../types'
 import { i18n } from '../i18n'
 
@@ -97,6 +98,14 @@ export const useAceStepStore = defineStore('aceStep', {
       }
     },
     async refreshHealth() {
+      // Don't hammer a stopped engine: it answers every probe with 503,
+      // which only spams the backend log. The orchestrator status bar
+      // already shows "stopped".
+      const orchStatus = useOrchestratorStore().statuses['ace_step']?.status
+      if (orchStatus === 'stopped' || orchStatus == null) {
+        this.healthError = false
+        return
+      }
       try {
         this.health = await api.health()
         this.healthError = false

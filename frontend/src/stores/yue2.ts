@@ -2,6 +2,7 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 import * as api from '../api/yue2'
 import type { CotMode, GenerateOptions } from '../api/yue2'
 import * as tracksApi from '../api/tracks'
+import { useOrchestratorStore } from './orchestrator'
 import type { JobStatus } from '../types'
 import { i18n } from '../i18n'
 
@@ -86,6 +87,14 @@ export const useYue2Store = defineStore('yue2', {
       }
     },
     async refreshHealth() {
+      // Don't hammer a stopped engine: it answers every probe with 503,
+      // which only spams the backend log. The orchestrator status bar
+      // already shows "stopped".
+      const orchStatus = useOrchestratorStore().statuses['yue2']?.status
+      if (orchStatus === 'stopped' || orchStatus == null) {
+        this.healthError = false
+        return
+      }
       try {
         this.health = await api.health()
         this.healthError = false
