@@ -108,6 +108,7 @@ const style = ref('')
 const cot = ref<CotMode>('off')
 const precision = ref<'q8_0' | 'q4_0'>('q8_0')
 const abc = ref('')
+const instrumental = ref(false)
 
 const coverFile = ref<File | null>(null)
 const unloadSheetSage = ref(true)
@@ -116,11 +117,11 @@ const coverStatus = ref('')
 const coverError = ref('')
 
 const seed = ref(831001)
-const randomSeed = ref(false)
+const randomSeed = ref(true)
 const batchSize = ref<1 | 2 | 3 | 4>(1)
 
 const cfgScale = ref<number | null>(null)
-const numInferenceSteps = ref<number | null>(null)
+const numInferenceSteps = ref<number | null>(8)
 const semantic = reactive<Record<string, number | null>>({
   temperature: null, top_p: null, top_k: null, repetition_penalty: null, penalty_window: null, min_tokens: null, max_tokens: null,
 })
@@ -202,8 +203,19 @@ async function extractAbc() {
 function onPromptApply(r: { style_en: string; lyrics: string; simple: string }) {
   if (r.style_en) style.value = r.style_en
   // Only fill lyrics when the field is empty — never overwrite the user's own text.
-  if (r.lyrics && !lyrics.value.trim()) lyrics.value = r.lyrics
-  else if (!lyrics.value.trim() && r.simple) lyrics.value = r.simple
+  if (r.lyrics && !lyrics.value.trim()) {
+    lyrics.value = r.lyrics
+    instrumental.value = false
+  } else if (!lyrics.value.trim() && r.simple) {
+    lyrics.value = r.simple
+    instrumental.value = false
+  }
+}
+
+function onInstrumentalChange() {
+  // The [instrumental] marker biases YuE2 toward no-vocal output. Without the
+  // dedicated instrumental LoRA adapter some vocal traces may remain.
+  if (instrumental.value && !lyrics.value.trim()) lyrics.value = '[instrumental]'
 }
 
 function buildOptions(): GenerateOptions {
@@ -226,7 +238,8 @@ function buildOptions(): GenerateOptions {
 
 async function submit() {
   formError.value = ''
-  if (!lyrics.value.trim()) {
+  const finalLyrics = lyrics.value.trim() || (instrumental.value ? '[instrumental]' : '')
+  if (!finalLyrics) {
     formError.value = t('yueGen.enterLyrics')
     return
   }
@@ -237,7 +250,7 @@ async function submit() {
   submitting.value = true
   try {
     await store.generateBatch({
-      lyrics: lyrics.value.trim(),
+      lyrics: finalLyrics,
       style: style.value.trim(),
       cot: cot.value,
       precision: precision.value,
@@ -320,6 +333,10 @@ async function submit() {
           <HelpIconButton @click="helpOpen = 'lyrics'" />
         </div>
         <textarea v-model="lyrics" rows="6" class="w-full rounded-lg border border-border bg-panel-2 p-2.5 font-mono text-sm text-text" :placeholder="t('aceGen.lyricsPlaceholder')"></textarea>
+        <label class="flex items-center gap-2 text-sm text-text-dim">
+          <input v-model="instrumental" type="checkbox" class="rounded border-border" @change="onInstrumentalChange" />
+          {{ t('yueGen.instrumental') }}
+        </label>
       </div>
 
       <div class="space-y-1.5">

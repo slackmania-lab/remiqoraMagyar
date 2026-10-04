@@ -328,6 +328,7 @@ export default {
     submitting: 'Submitting…',
     enterLyrics: 'Enter the lyrics.',
     enterStyle: 'Specify a style/genre.',
+    instrumental: 'Instrumental (no vocals — sends [instrumental])',
     cotModeLabel: 'COT mode',
     precisionLabel: 'Model precision',
     cotHints: {
