@@ -1,4 +1,4 @@
-import { getSharedAudioCtx } from '../composables/audioPlayback'
+import { getLiveDestination, getSharedAudioCtx } from '../composables/audioPlayback'
 import { i18n } from '../i18n'
 
 export interface MidiNote {
@@ -152,7 +152,7 @@ export function playMidiNotes(notes: MidiNote[], startOffsetSec = 0, onEnded?: (
   const ctx = getSharedAudioCtx()
   const masterGain = ctx.createGain()
   masterGain.gain.setValueAtTime(0.3, ctx.currentTime)
-  masterGain.connect(ctx.destination)
+  masterGain.connect(getLiveDestination(ctx))
 
   const activeNodes: { osc: OscillatorNode; gain: GainNode }[] = []
   let stopped = false

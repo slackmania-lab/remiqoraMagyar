@@ -7,6 +7,7 @@
  */
 import { applyChannelSettings, buildChannel, disconnectChannel, effectTailSeconds, getReverbImpulse } from './mixerEngine'
 import type { BuiltChannel, ChannelSettings, MasterSettings } from './mixerEngine'
+import { getLiveDestination } from '../composables/audioPlayback'
 
 export interface TimelineGraph {
   ctx: BaseAudioContext
@@ -16,7 +17,7 @@ export interface TimelineGraph {
 
 export function buildTimelineGraph(ctx: BaseAudioContext, laneCount: number, impulse: AudioBuffer): TimelineGraph {
   const master = buildChannel(ctx, true, impulse)
-  master.output.connect(ctx.destination)
+  master.output.connect(getLiveDestination(ctx))
   const graph: TimelineGraph = { ctx, lanes: [], master }
   for (let i = 0; i < laneCount; i++) graph.lanes.push(buildLaneChannel(graph, impulse))
   return graph

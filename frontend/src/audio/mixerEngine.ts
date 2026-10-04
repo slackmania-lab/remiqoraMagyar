@@ -16,7 +16,7 @@
  *   (like Chrome) automatically detect silent streams and suspend processing
  *   for those nodes, drastically saving CPU (Silent Stream Optimization).
  */
-import { getSharedAudioCtx } from '../composables/audioPlayback'
+import { getLiveDestination, getSharedAudioCtx } from '../composables/audioPlayback'
 
 export interface EqSettings {
   low: number
@@ -526,7 +526,7 @@ export interface MixGraph {
  */
 export function buildMixGraph(ctx: BaseAudioContext, impulse: AudioBuffer): MixGraph {
   const master = buildChannel(ctx, true, impulse)
-  master.output.connect(ctx.destination)
+  master.output.connect(getLiveDestination(ctx))
   const stems = {} as Record<StemName, BuiltChannel>
   for (const name of STEM_NAMES) {
     const ch = buildChannel(ctx, false, impulse)

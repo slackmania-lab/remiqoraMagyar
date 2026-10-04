@@ -18,6 +18,7 @@ export default {
     lora: 'LoRA',
     tagline: 'Made with AI. Made by you.',
     help: 'How it works',
+    volume: 'Master volume',
     helpTitle: 'What this is and how it works',
     helpSections: {
       what: { title: 'What Remiqora is', text: 'A local studio for making music with AI. It generates tracks from a description or lyrics, splits them into stems, pulls melodies out as MIDI, trains your own style adapters (LoRA) and lets you arrange and mix everything in a timeline editor, all in one interface.' },

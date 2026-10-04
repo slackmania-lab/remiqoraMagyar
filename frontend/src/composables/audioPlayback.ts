@@ -9,6 +9,7 @@
  * contrast, only runs once per module URL, so state declared here really
  * is one shared instance across every WaveformPlayer on the page.
  */
+import { ref } from 'vue'
 
 export const peaksCache = new Map<string, number[]>()
 const inFlightPeaks = new Map<string, Promise<number[]>>()
@@ -94,8 +95,67 @@ let currentlyPlaying: HTMLAudioElement | null = null
 export function claimPlayback(audio: HTMLAudioElement): void {
   if (currentlyPlaying && currentlyPlaying !== audio) currentlyPlaying.pause()
   currentlyPlaying = audio
+  audio.volume = masterVolume.value
 }
 
 export function releasePlaybackIfCurrent(audio: HTMLAudioElement): void {
   if (currentlyPlaying === audio) currentlyPlaying = null
+}
+
+/**
+ * Global output volume (0..1 gain, header slider). Persisted in localStorage.
+ * Web Audio graphs route their live output through getLiveDestination();
+ * plain <audio> previews get .volume set on claim and on every change.
+ * Offline renders (exports) always bypass it so files stay full-scale.
+ */
+const VOLUME_KEY = 'remiqora_master_volume'
+
+function loadVolume(): number {
+  try {
+    const raw = localStorage.getItem(VOLUME_KEY)
+    if (raw != null) {
+      const v = Number(raw)
+      if (Number.isFinite(v)) return Math.min(1, Math.max(0, v))
+    }
+  } catch {
+    // ignore - private browsing etc.
+  }
+  return 1
+}
+
+export const masterVolume = ref(loadVolume())
+
+let liveGain: GainNode | null = null
+
+/** Destination node for LIVE playback. Offline contexts get the raw destination (exports stay full-scale). */
+export function getLiveDestination(ctx: BaseAudioContext): AudioNode {
+  if (typeof OfflineAudioContext !== 'undefined' && ctx instanceof OfflineAudioContext) return ctx.destination
+  const ac = ctx as AudioContext
+  if (!liveGain || liveGain.context !== ac) {
+    try {
+      liveGain?.disconnect()
+    } catch {
+      // already disconnected - ignore
+    }
+    liveGain = ac.createGain()
+    liveGain.gain.value = masterVolume.value
+    liveGain.connect(ac.destination)
+  }
+  return liveGain
+}
+
+export function setMasterVolume(v: number): void {
+  const clamped = Math.min(1, Math.max(0, v))
+  masterVolume.value = clamped
+  try {
+    localStorage.setItem(VOLUME_KEY, String(clamped))
+  } catch {
+    // ignore
+  }
+  if (liveGain) liveGain.gain.setTargetAtTime(clamped, liveGain.context.currentTime, 0.02)
+  if (typeof document !== 'undefined') {
+    document.querySelectorAll('audio').forEach((el) => {
+      ;(el as HTMLAudioElement).volume = clamped
+    })
+  }
 }

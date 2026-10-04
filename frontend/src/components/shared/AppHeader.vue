@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 import { useOrchestratorStore } from '../../stores/orchestrator'
 import { MODEL_LABELS, MODEL_ROUTES, useModelSwitch } from '../../composables/useModelSwitch'
 import { setLocale, currentLocale, type LocaleCode } from '../../i18n'
+import { masterVolume, setMasterVolume } from '../../composables/audioPlayback'
 import type { ModelId, ModelRuntimeStatus } from '../../types'
 import HelpModal from './HelpModal.vue'
 
@@ -26,6 +27,14 @@ function localeLabel(): string {
   const order: LocaleCode[] = ['hu', 'en', 'ru']
   const next: LocaleCode = order[(order.indexOf(currentLocale()) + 1) % order.length]
   return next.toUpperCase()
+}
+
+function volumePercent(): number {
+  return Math.round(masterVolume.value * 100)
+}
+
+function onVolumeInput(e: Event) {
+  setMasterVolume(Number((e.target as HTMLInputElement).value) / 100)
 }
 
 // The header's height (it wraps on a phone) as --header-h, so sticky bars below it know where to stop.
@@ -90,6 +99,18 @@ async function onSelect(id: ModelId) {
       </router-link>
 
       <div class="ml-auto flex items-center gap-2 sm:order-last sm:ml-0">
+        <label class="flex items-center gap-2 rounded-lg border border-border bg-panel-2 px-3 py-2" :title="t('header.volume')">
+          <span aria-hidden="true" class="text-xs">{{ volumePercent() === 0 ? '🔇' : '🔊' }}</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            :value="volumePercent()"
+            :aria-label="t('header.volume')"
+            class="h-1 w-24 cursor-pointer accent-white sm:w-28"
+            @input="onVolumeInput"
+          />
+        </label>
         <button
           type="button"
           class="min-h-9 rounded-lg border border-border bg-panel-2 px-3 py-2 text-xs font-semibold text-text-dim hover:text-text"
