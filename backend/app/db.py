@@ -59,6 +59,9 @@ def get_db() -> sqlite3.Connection:
         if "midi_json" not in cols:
             _db.execute("ALTER TABLE tracks ADD COLUMN midi_json TEXT")
             _db.commit()
+        if "favorite" not in cols:
+            _db.execute("ALTER TABLE tracks ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0")
+            _db.commit()
         _db.execute(
             """
             CREATE TABLE IF NOT EXISTS projects (
@@ -143,6 +146,15 @@ def update_track_title(track_id: int, title: str) -> bool:
     if not get_track(track_id):
         return False
     db.execute("UPDATE tracks SET title = ? WHERE id = ?", (title, track_id))
+    db.commit()
+    return True
+
+
+def set_track_favorite(track_id: int, favorite: bool) -> bool:
+    db = get_db()
+    if not get_track(track_id):
+        return False
+    db.execute("UPDATE tracks SET favorite = ? WHERE id = ?", (1 if favorite else 0, track_id))
     db.commit()
     return True
 

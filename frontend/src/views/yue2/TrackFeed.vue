@@ -13,9 +13,12 @@ const { t } = useI18n()
 
 const { sortOrder, dateFrom, dateTo, activePreset, isFiltered, filteredSorted, applyPreset, reset } = useDateFilterSort(() => store.jobs)
 
-const { pageSize, page, totalPages, total, pageItems, rangeFrom, rangeTo, setPage, setPageSize, resetPage } = usePagination(() => filteredSorted.value)
+const favOnly = ref(false)
+const favFiltered = computed(() => (favOnly.value ? filteredSorted.value.filter((j) => j.favorite) : filteredSorted.value))
+
+const { pageSize, page, totalPages, total, pageItems, rangeFrom, rangeTo, setPage, setPageSize, resetPage } = usePagination(() => favFiltered.value)
 // A different sort or period is a different list: start from its first page.
-watch([sortOrder, dateFrom, dateTo], resetPage)
+watch([sortOrder, dateFrom, dateTo, favOnly], resetPage)
 
 const barProps = computed(() => ({
   page: page.value,
@@ -36,7 +39,20 @@ function goToPage(n: number) {
 
 <template>
   <div class="space-y-3">
-    <h2 ref="feedTop" class="text-lg font-semibold text-text" style="scroll-margin-top: calc(var(--header-h, 64px) + 12px)">{{ t('feed.yourTracks') }}</h2>
+    <div class="flex items-center gap-2">
+      <h2 ref="feedTop" class="text-lg font-semibold text-text" style="scroll-margin-top: calc(var(--header-h, 64px) + 12px)">{{ t('feed.yourTracks') }}</h2>
+      <button
+        v-if="store.jobs.some((j) => j.favorite)"
+        type="button"
+        class="rounded-lg border px-2.5 py-1 text-xs font-medium"
+        :class="favOnly ? 'border-status-failed/50 text-status-failed' : 'border-border text-text-dim hover:text-text'"
+        :aria-pressed="favOnly"
+        :title="t('feed.favoritesOnly')"
+        @click="favOnly = !favOnly"
+      >
+        {{ favOnly ? '❤' : '♡' }} {{ t('feed.favoritesOnly') }}
+      </button>
+    </div>
 
     <FilterSortBar
       v-if="store.jobs.length > 0"

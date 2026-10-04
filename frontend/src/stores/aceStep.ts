@@ -26,6 +26,7 @@ export interface AceJob {
   audioUrls: string[]
   dbIds: number[]
   finalized: boolean
+  favorite: boolean
   durationSec?: number | null
   params?: Record<string, any>
 }
@@ -77,6 +78,7 @@ export const useAceStepStore = defineStore('aceStep', {
           audioUrls: [t.audio_url],
           dbIds: [t.id],
           finalized: true,
+          favorite: t.favorite,
           durationSec: t.duration_ms ? t.duration_ms / 1000 : null,
           params: t.params,
         }))
@@ -221,6 +223,7 @@ export const useAceStepStore = defineStore('aceStep', {
         audioUrls: [],
         dbIds: [],
         finalized: false,
+        favorite: false,
         params: { ...req },
       }
       this.jobs.unshift(job)
@@ -268,6 +271,19 @@ export const useAceStepStore = defineStore('aceStep', {
       if (!job) return
       await Promise.all(job.dbIds.map((id) => tracksApi.renameTrack(id, title)))
       job.title = title
+    },
+    // A card can hold several saved variants (dbIds); the heart flips all of
+    // them at once and shows filled when at least one is a favorite.
+    async toggleFavorite(jobId: string) {
+      const job = this.jobs.find((j) => j.id === jobId)
+      if (!job || job.dbIds.length === 0) return
+      const next = !job.favorite
+      job.favorite = next
+      try {
+        await Promise.all(job.dbIds.map((id) => tracksApi.setTrackFavorite(id, next)))
+      } catch {
+        job.favorite = !next
+      }
     },
   },
 })

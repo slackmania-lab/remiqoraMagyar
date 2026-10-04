@@ -77,6 +77,7 @@ def _row_to_dict(row) -> dict:
             if row["midi_json"]
             else None
         ),
+        "favorite": bool(row["favorite"]) if "favorite" in row.keys() else False,
     }
 
 
@@ -224,6 +225,13 @@ async def track_abc(track_id: int):
 @router.put("/{track_id}")
 async def rename_track(track_id: int, title: str = Body(..., embed=True)):
     if not db.update_track_title(track_id, title):
+        raise HTTPException(status_code=404, detail="track not found")
+    return _row_to_dict(db.get_track(track_id))
+
+
+@router.put("/{track_id}/favorite")
+async def favorite_track(track_id: int, favorite: bool = Body(..., embed=True)):
+    if not db.set_track_favorite(track_id, favorite):
         raise HTTPException(status_code=404, detail="track not found")
     return _row_to_dict(db.get_track(track_id))
 

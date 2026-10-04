@@ -110,6 +110,7 @@ export default {
     reuse: 'Beállítások újrafelhasználása',
     deleteTrack: 'Szám törlése',
     deleteShort: 'Törlöd?',
+    favorite: 'Kedvenc',
     confirmDelete: 'Kattints újra a törléshez',
     variant: '{n}. változat',
     downloadVariant: '{n}. változat letöltése',
@@ -464,6 +465,7 @@ export default {
     stopAll: '⏹ Mind leállítása',
     emptyHint: 'A generált számok itt jelennek meg.',
     noneInPeriod: 'Nincs szám a kiválasztott időszakban.',
+    favoritesOnly: 'Kedvencek',
   },
   acePage: {
     trainingActive: 'LoRA-tanítás fut – a zenegenerálás átmenetileg nem elérhető.',

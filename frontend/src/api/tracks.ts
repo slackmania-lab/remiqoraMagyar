@@ -16,6 +16,7 @@ export interface SavedTrack {
   abc_url: string | null
   stems: Record<string, string> | null
   midi: Record<string, string> | null
+  favorite: boolean
 }
 
 export interface SaveTrackMeta {
@@ -57,6 +58,10 @@ export async function listTracks(model?: TrackOrigin): Promise<SavedTrack[]> {
 
 export function renameTrack(id: number, title: string): Promise<SavedTrack> {
   return apiJson<SavedTrack>(`/api/tracks/${id}`, { title }, 'PUT')
+}
+
+export function setTrackFavorite(id: number, favorite: boolean): Promise<SavedTrack> {
+  return apiJson<SavedTrack>(`/api/tracks/${id}/favorite`, { favorite }, 'PUT')
 }
 
 export async function deleteTrack(id: number): Promise<void> {

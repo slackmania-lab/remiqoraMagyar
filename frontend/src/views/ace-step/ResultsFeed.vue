@@ -14,9 +14,12 @@ const hasActive = computed(() => store.activeJobs.length > 0)
 
 const { sortOrder, dateFrom, dateTo, activePreset, isFiltered, filteredSorted, applyPreset, reset } = useDateFilterSort(() => store.jobs)
 
-const { pageSize, page, totalPages, total, pageItems, rangeFrom, rangeTo, setPage, setPageSize, resetPage } = usePagination(() => filteredSorted.value)
+const favOnly = ref(false)
+const favFiltered = computed(() => (favOnly.value ? filteredSorted.value.filter((j) => j.favorite) : filteredSorted.value))
+
+const { pageSize, page, totalPages, total, pageItems, rangeFrom, rangeTo, setPage, setPageSize, resetPage } = usePagination(() => favFiltered.value)
 // A different sort or period is a different list: start from its first page.
-watch([sortOrder, dateFrom, dateTo], resetPage)
+watch([sortOrder, dateFrom, dateTo, favOnly], resetPage)
 
 const barProps = computed(() => ({
   page: page.value,
@@ -42,7 +45,20 @@ async function stopAll() {
 <template>
   <div class="space-y-3">
     <div ref="feedTop" class="flex items-center justify-between" style="scroll-margin-top: calc(var(--header-h, 64px) + 12px)">
-      <h2 class="text-lg font-semibold text-text">{{ t('feed.yourTracks') }}</h2>
+      <div class="flex items-center gap-2">
+        <h2 class="text-lg font-semibold text-text">{{ t('feed.yourTracks') }}</h2>
+        <button
+          v-if="store.jobs.some((j) => j.favorite)"
+          type="button"
+          class="rounded-lg border px-2.5 py-1 text-xs font-medium"
+          :class="favOnly ? 'border-status-failed/50 text-status-failed' : 'border-border text-text-dim hover:text-text'"
+          :aria-pressed="favOnly"
+          :title="t('feed.favoritesOnly')"
+          @click="favOnly = !favOnly"
+        >
+          {{ favOnly ? '❤' : '♡' }} {{ t('feed.favoritesOnly') }}
+        </button>
+      </div>
       <button v-if="hasActive" type="button" class="rounded-lg border border-status-failed/40 px-3 py-1.5 text-xs text-status-failed hover:bg-status-failed/10" @click="stopAll">
         {{ t('feed.stopAll') }}
       </button>

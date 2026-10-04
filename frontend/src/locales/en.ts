@@ -110,6 +110,7 @@ export default {
     reuse: 'Use these settings again',
     deleteTrack: 'Delete track',
     deleteShort: 'Delete?',
+    favorite: 'Favorite',
     confirmDelete: 'Click again to delete',
     variant: 'Variant {n}',
     downloadVariant: 'Download variant {n}',
@@ -464,6 +465,7 @@ export default {
     stopAll: '⏹ Stop all',
     emptyHint: 'Generated tracks will show up here.',
     noneInPeriod: 'No tracks in the selected period.',
+    favoritesOnly: 'Favorites',
   },
   acePage: {
     trainingActive: 'A LoRA training run is in progress — music generation is temporarily unavailable.',

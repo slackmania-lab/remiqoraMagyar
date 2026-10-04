@@ -141,6 +141,18 @@ function copyParamsToForm() {
               <ReuseIcon class="h-4 w-4" />
             </button>
             <button
+              v-if="job.status === 'done' && job.dbIds.length > 0"
+              type="button"
+              class="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-panel-2"
+              :class="job.favorite ? 'text-status-failed' : 'text-text-dim hover:text-text'"
+              :aria-label="t('trackCard.favorite')"
+              :title="t('trackCard.favorite')"
+              :aria-pressed="job.favorite"
+              @click="store.toggleFavorite(job.id)"
+            >
+              <span aria-hidden="true" class="text-base leading-none">{{ job.favorite ? '❤' : '♡' }}</span>
+            </button>
+            <button
               v-if="!inProgress"
               type="button"
               class="hidden h-8 items-center justify-center rounded-lg @min-[640px]:flex"

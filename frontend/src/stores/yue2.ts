@@ -30,6 +30,7 @@ export interface Yue2Job {
   saveError?: string | null
   dbId?: number | null
   finalized: boolean
+  favorite: boolean
   params?: Record<string, any>
 }
 
@@ -74,6 +75,7 @@ export const useYue2Store = defineStore('yue2', {
           savedFilename: t.filename,
           dbId: t.id,
           finalized: true,
+          favorite: t.favorite,
           params: t.params,
         }))
         // Keep any jobs still in-flight this session (not yet in the saved list).
@@ -103,10 +105,12 @@ export const useYue2Store = defineStore('yue2', {
       if (this._healthTimer) clearTimeout(this._healthTimer)
       this._healthTimer = null
     },
-    async generateBatch(params: { lyrics: string; style: string; cot: CotMode; precision: 'q8_0' | 'q4_0'; baseSeed: number; randomSeed: boolean; batchSize: number; options: GenerateOptions; instrumental?: boolean }) {
+    async generateBatch(params: { lyrics: string; style: string; cot: CotMode; precision: 'q8_0' | 'q4_0'; baseSeed: number; randomSeed: boolean; seeds?: number[]; batchSize: number; options: GenerateOptions; instrumental?: boolean }) {
       const newJobs: Yue2Job[] = []
       for (let i = 0; i < params.batchSize; i++) {
-        const seed = params.randomSeed ? Math.floor(Math.random() * 2147483647) : params.baseSeed + i
+        const seed = params.seeds && params.seeds.length === params.batchSize
+          ? params.seeds[i]
+          : params.randomSeed ? Math.floor(Math.random() * 2147483647) : params.baseSeed + i
         newJobs.push({
           id: `g_${Date.now()}_${i}`,
           status: 'queued',
@@ -118,6 +122,7 @@ export const useYue2Store = defineStore('yue2', {
           precision: params.precision,
           seed,
           finalized: false,
+          favorite: false,
           params: { ...params.options, cot: params.cot, precision: params.precision, style: params.style, lyrics: params.lyrics, instrumental: !!params.instrumental },
         })
       }
@@ -170,6 +175,7 @@ export const useYue2Store = defineStore('yue2', {
           job.savedFilename = saved.filename
           job.saveError = null
           job.dbId = saved.id
+          job.favorite = saved.favorite
         } catch (err) {
           job.savedFilename = null
           job.saveError = err instanceof Error ? err.message : String(err)
@@ -211,6 +217,19 @@ export const useYue2Store = defineStore('yue2', {
       await tracksApi.renameTrack(job.dbId, title)
       const target = this.jobs.find((j) => j.id === job.id)
       if (target) target.title = title
+    },
+    async toggleFavorite(job: Yue2Job) {
+      if (job.dbId == null) return
+      const next = !job.favorite
+      job.favorite = next
+      try {
+        const saved = await tracksApi.setTrackFavorite(job.dbId, next)
+        const target = this.jobs.find((j) => j.id === job.id)
+        if (target) target.favorite = saved.favorite
+      } catch {
+        const target = this.jobs.find((j) => j.id === job.id)
+        if (target) target.favorite = !next
+      }
     },
   },
 })

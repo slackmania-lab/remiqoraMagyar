@@ -252,6 +252,11 @@ async function submit() {
     return
   }
   const options = buildOptions()
+  // Concrete seeds up front so the recipe records exactly what will run.
+  const base = Number.isFinite(seed.value) ? seed.value : 831001
+  const seeds = Array.from({ length: batchSize.value }, (_, i) =>
+    randomSeed.value ? Math.floor(Math.random() * 2147483647) : base + i,
+  )
   // Auto-save a shareable recipe so this exact generation can be repeated later.
   downloadRecipe({
     app: 'remiqora',
@@ -265,14 +270,14 @@ async function submit() {
       style: style.value.trim(),
       cot: cot.value,
       precision: precision.value,
-      seed: seed.value,
-      randomSeed: randomSeed.value,
+      seed: seeds[0],
+      seeds,
+      randomSeed: false,
       batchSize: batchSize.value,
       abc: abc.value,
       instrumental: instrumental.value,
       options,
     },
-    note: randomSeed.value ? 'randomSeed was on: for a bit-exact repeat, copy the seed shown on the finished track card into the seed field and uncheck random.' : undefined,
   })
   submitting.value = true
   try {
@@ -281,8 +286,9 @@ async function submit() {
       style: style.value.trim(),
       cot: cot.value,
       precision: precision.value,
-      baseSeed: Number.isFinite(seed.value) ? seed.value : 831001,
+      baseSeed: base,
       randomSeed: randomSeed.value,
+      seeds,
       batchSize: batchSize.value,
       options,
       instrumental: instrumental.value,
@@ -318,8 +324,15 @@ async function onRecipeFile(e: Event) {
     if (strParam(p, 'style')) style.value = strParam(p, 'style')
     if (p.cot === 'off' || p.cot === 'melody' || p.cot === 'full') cot.value = p.cot
     if (p.precision === 'q8_0' || p.precision === 'q4_0') precision.value = p.precision
-    if (typeof p.seed === 'number' && Number.isFinite(p.seed)) seed.value = p.seed
-    if (typeof p.randomSeed === 'boolean') randomSeed.value = p.randomSeed
+    // A loaded recipe always replays concrete seeds: random stays off so the
+    // stored seed takes effect.
+    if (Array.isArray(p.seeds) && p.seeds.length > 0 && p.seeds.every((s) => typeof s === 'number')) {
+      seed.value = p.seeds[0] as number
+      randomSeed.value = false
+    } else {
+      if (typeof p.seed === 'number' && Number.isFinite(p.seed)) seed.value = p.seed
+      randomSeed.value = false
+    }
     if (p.batchSize === 1 || p.batchSize === 2 || p.batchSize === 3 || p.batchSize === 4) batchSize.value = p.batchSize
     if (strParam(p, 'abc')) {
       abc.value = strParam(p, 'abc')

@@ -110,6 +110,7 @@ export default {
     reuse: 'Использовать параметры заново',
     deleteTrack: 'Удалить трек',
     deleteShort: 'Удалить?',
+    favorite: 'В избранное',
     confirmDelete: 'Нажмите ещё раз, чтобы удалить',
     variant: 'Вариант {n}',
     downloadVariant: 'Скачать вариант {n}',
@@ -464,6 +465,7 @@ export default {
     stopAll: '⏹ Остановить всё',
     emptyHint: 'Здесь появятся сгенерированные треки.',
     noneInPeriod: 'Нет треков за выбранный период.',
+    favoritesOnly: 'Избранное',
   },
   acePage: {
     trainingActive: 'Идёт тренировка LoRA — генерация музыки временно недоступна.',
