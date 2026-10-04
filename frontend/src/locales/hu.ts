@@ -466,6 +466,7 @@ export default {
     emptyHint: 'A generált számok itt jelennek meg.',
     noneInPeriod: 'Nincs szám a kiválasztott időszakban.',
     favoritesOnly: 'Kedvencek',
+    gpuLoadTitle: 'GPU-terhelés generálás közben — a magas érték azt jelenti, hogy dolgozik, nem pedig hogy megakadt.',
   },
   acePage: {
     trainingActive: 'LoRA-tanítás fut – a zenegenerálás átmenetileg nem elérhető.',

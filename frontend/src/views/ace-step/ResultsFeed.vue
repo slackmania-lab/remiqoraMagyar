@@ -6,6 +6,7 @@ import { useDateFilterSort } from '../../composables/useDateFilterSort'
 import { usePagination } from '../../composables/usePagination'
 import FilterSortBar from '../../components/shared/FilterSortBar.vue'
 import PaginationBar from '../../components/shared/PaginationBar.vue'
+import GpuLoadBadge from '../../components/shared/GpuLoadBadge.vue'
 import JobCard from './JobCard.vue'
 
 const store = useAceStepStore()
@@ -58,6 +59,7 @@ async function stopAll() {
         >
           {{ favOnly ? '❤' : '♡' }} {{ t('feed.favoritesOnly') }}
         </button>
+        <GpuLoadBadge :active="hasActive" />
       </div>
       <button v-if="hasActive" type="button" class="rounded-lg border border-status-failed/40 px-3 py-1.5 text-xs text-status-failed hover:bg-status-failed/10" @click="stopAll">
         {{ t('feed.stopAll') }}

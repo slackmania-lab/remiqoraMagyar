@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
 from .api.routes_lora_dataset import router as lora_dataset_router
+from .api.routes_gpu import router as gpu_router
 from .api.routes_midi import router as midi_router
 from .api.routes_orchestrator import router as orchestrator_router
 from .api.routes_projects import router as projects_router
@@ -37,6 +38,7 @@ app.include_router(projects_router)
 app.include_router(prompt_router)
 app.include_router(settings_router)
 app.include_router(lora_dataset_router)
+app.include_router(gpu_router)
 # Registered before proxy_router's catch-all so this exact path wins.
 app.include_router(yue2_upload_router)
 app.include_router(proxy_router)

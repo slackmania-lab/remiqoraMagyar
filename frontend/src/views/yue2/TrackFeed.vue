@@ -6,10 +6,12 @@ import { useDateFilterSort } from '../../composables/useDateFilterSort'
 import { usePagination } from '../../composables/usePagination'
 import FilterSortBar from '../../components/shared/FilterSortBar.vue'
 import PaginationBar from '../../components/shared/PaginationBar.vue'
+import GpuLoadBadge from '../../components/shared/GpuLoadBadge.vue'
 import TrackCard from './TrackCard.vue'
 
 const store = useYue2Store()
 const { t } = useI18n()
+const hasActive = computed(() => store.jobs.some((j) => j.status === 'queued' || j.status === 'running'))
 
 const { sortOrder, dateFrom, dateTo, activePreset, isFiltered, filteredSorted, applyPreset, reset } = useDateFilterSort(() => store.jobs)
 
@@ -52,6 +54,7 @@ function goToPage(n: number) {
       >
         {{ favOnly ? '❤' : '♡' }} {{ t('feed.favoritesOnly') }}
       </button>
+      <GpuLoadBadge :active="hasActive" />
     </div>
 
     <FilterSortBar

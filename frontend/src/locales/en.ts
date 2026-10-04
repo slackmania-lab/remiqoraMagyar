@@ -466,6 +466,7 @@ export default {
     emptyHint: 'Generated tracks will show up here.',
     noneInPeriod: 'No tracks in the selected period.',
     favoritesOnly: 'Favorites',
+    gpuLoadTitle: 'GPU load while generating — high means it is working, not stuck.',
   },
   acePage: {
     trainingActive: 'A LoRA training run is in progress — music generation is temporarily unavailable.',
