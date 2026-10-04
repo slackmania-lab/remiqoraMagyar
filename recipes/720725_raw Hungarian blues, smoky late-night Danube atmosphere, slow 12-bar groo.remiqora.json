@@ -1,0 +1,29 @@
+{
+  "app": "remiqora",
+  "kind": "recipe",
+  "version": 1,
+  "engine": "yue2",
+  "title": "720725_raw Hungarian blues, smoky late-night Danube atmosphere, slow 12-bar groove, gravelly weary male Hungarian vocal, resonator slide guitar, blues harmonica, upright bass, brushed drums, dim bar neon glow, 72 bpm, vintage analog recording",
+  "createdAt": "2026-10-04T17:46:36Z",
+  "params": {
+    "lyrics": "[Verse 1]\r\nLeszállt az éj a Dunára,\r\nKöd ül a Lánchíd vállára,\r\nKialudt a fény a sarkon,\r\nEgy árnyék jár az udvaron.\r\n\r\n[Verse 2]\r\nA poharamban whiskey maradt,\r\nA cigarettám rég elhamvadt,\r\nA pultos már hazafele int,\r\nÉn meg iszom a semmit.\r\n\r\n[Verse 3]\r\nElment az utolsó villamos,\r\nAz eső veri az ablakot,\r\nFelhívtalak, nem vetted fel,\r\nA blues tudja, milyen egyedül.\r\n\r\n[Chorus]\r\nHé, Duna, vidd a bánatom,\r\nMoss tisztára hajnalodon,\r\nA blues az én vallásom,\r\nÉjfél az én templomom.\r\n\r\n[Verse 4]\r\nA szájharmonikás a sarkon állt,\r\nOlyan dalt fújt, hogy beleremegtem,\r\nAzt mondta: fiam, ez az élet —\r\nAki szeret, az mind elfelejt.\r\n\r\n[Verse 5]\r\nHajnalodik a Gellért felett,\r\nA madarak még alusznak,\r\nÉn meg itt ülök a romok között,\r\nÉs a tegnapnak integetek.\r\n\r\n[Chorus]\r\nHé, Duna, vidd a bánatom,\r\nMoss tisztára hajnalodon,\r\nA blues az én vallásom,\r\nÉjfél az én templomom.\r\n\r\n[Verse 6]\r\nHa egyszer gazdag leszek,\r\nVeszek egy házat a hegyen,\r\nDe addig is itt maradok —\r\nA blues velem, én meg vagyok.\r\n\r\n[Verse 7]\r\nÚgyhogy tölts még egy pohárral,\r\nNevess rajtam utoljára,\r\nMert aki bluest énekel,\r\nAz sosincs igazán egyedül.",
+    "style": "raw Hungarian blues, smoky late-night Danube atmosphere, slow 12-bar groove, gravelly weary male Hungarian vocal, resonator slide guitar, blues harmonica, upright bass, brushed drums, dim bar neon glow, 72 bpm, vintage analog recording",
+    "cot": "full",
+    "precision": "q8_0",
+    "seed": 720725,
+    "seeds": [
+      720725
+    ],
+    "randomSeed": false,
+    "batchSize": 1,
+    "abc": "X:1\n\nT:\n\nM:6/8\n\nL:1/32\n\nQ:1/4=80\n\nV: Vocal clef=treble name=\"Vocal Melody\" snm=\"Vocal\"\n\nV: Ins clef=treble name=\"Ins Melody\" snm=\"Inst.\"\n\nK:Gm\n\n% intro\n\nV: Vocal\n\nz16z4\"Gm\"z4|\"Gm\"z24|\"Gm\"z24|\"Gm\"z24|\n\nV: Ins\n\nZ|z12d4c4B4|c2B2G16z4|z16D4F4|\n\nV: Vocal\n\n\"Gm\"z24|\"Cm7\"z24|\"Cm7\"z24|\"Gm\"z24|\n\nV: Ins\n\nG16D4B,4|C16C2D2F2G2|B2G16z2F2D2|G16d4f4|\n\nV: Vocal\n\n\"Gm\"z24|\n\nV: Ins\n\ng24|\n\n% verse\n\nV: Vocal\n\n\"Gm\"d2d6c2c2c8B4|\"Gm\"B4G4z16|\"Gm\"z4d2d2c2c6B4B4|\"Gm\"B4G4z16|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Cm7\"z4c4c2B2c8B4|\"Cm7\"c4d4z16|\"Gm\"z4d4d4d8c4|\"Gm\"c4B2G2z16|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Gm\"d2d2d4d8c4B2c2|\"Gm\"B4z16z4|\"Gm\"d2d2d4d8c4B4|\"Gm\"c4B2G2z16|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Cm7\"c4c4c8c2B2c2B2|\"Cm7\"c2B2G4z12G4|\"Gm\"B2G2G2G6z8z2F2|\"Gm\"B4G4z16|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Gm\"d4d6d2d2d6d4|\"Gm\"c4B2G6z12|\"Gm\"d2d8z2f2d6c4|\"Gm\"c4B2G6z12|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Cm7\"c4c4c2B2c4c4B4|\"Cm7\"c2B2G4z16|\"Gm\"d8c2B2c2B6c2B2|\"Gm\"G8z16|\n\nV: Ins\n\nZ4|\n\n% chorus\n\nV: Vocal\n\n\"Gm\"g8f2d2f4d2c4B2|\"Gm\"c2B2G4z16|\"Gm\"g4f4d4c4c8|\"Gm\"c2B2G4z16|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Cm7\"c8c2B2c8B4|\"Cm7\"c4d8z12|\"Gm\"d4c4B2c6c6B2|\"Gm\"G8z16|\n\nV: Ins\n\nZ3|z12F4D4F4|\n\nV: Vocal\n\n\"Gm\"z24|\"Gm\"z24|\n\nV: Ins\n\nG16c4f4|g16-g6d2|\n\n% verse\n\nV: Vocal\n\n\"Gm\"d4d4d2d2d6c2c4|\"Gm\"B2G6z8F2G6|\"Gm\"d6c8B2c2B2c2B2-|\"Gm\"B2G6z16|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Cm7\"c4c4c4c2B2c2B2c4|\"Cm7\"d4z16c2B2|\"Gm\"c2d4z4G2c4c6B2|\"Gm\"G8z16|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Gm\"d4d2d2d2d2d4d8|\"Gm\"c2B6z16|\"Gm\"g2f2d8d8z2c2|\"Gm\"c4B4z12B4|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Cm7\"c2c4B2c2B2c2c6B2c2-|\"Cm7\"c4z16c2B2|\"Gm\"d4d4d4d8c2B2|\"Gm\"G8z16|\n\nV: Ins\n\nZ3|z12c4d4f4|\n\n% chorus\n\nV: Vocal\n\n\"Gm\"z8f2d2f4d2c4B2|\"Gm\"c2B2G8z12|\"Gm\"g4f4d4c4c8|\"Gm\"c2B2G8z8z2G2|\n\nV: Ins\n\ng8z16|Z3|\n\nV: Vocal\n\n\"Cm7\"c8c2B2c8B4|\"Cm7\"c4d8z12|\"Gm\"d4c4B2c6c6B2|\"Gm\"G8z16|\n\nV: Ins\n\nZ3|z12F4D4F4|\n\nV: Vocal\n\n\"Gm\"z24|\"Gm\"z24|\n\nV: Ins\n\nG12c4d4f4|g16-g6d2|\n\n% verse\n\nV: Vocal\n\n\"Gm\"d4d8d4d8|\"Gm\"c2B6z16|\"Gm\"d2d2d8d8c2B2|\"Gm\"c2B6z16|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Cm7\"c4c2c8z2c4c2B2|\"Cm7\"c4z16z4|\"Gm\"d8c2B2c4c6B2|\"Gm\"G8z16|\n\nV: Ins\n\nZ3|z12F4D4F4|\n\nV: Vocal\n\n\"Gm\"z24|\"Gm\"z24|\"Gm\"d4d4d8d6B2|\"Gm\"c2B4G6z12|\n\nV: Ins\n\nG12c4d4f4|g24|Z2|\n\nV: Vocal\n\n\"Gm\"d2d6d6c2c2B6|\"Gm\"c4B2G2z16|\"Cm7\"c8c2B2c2B4c4B2|\"Cm7\"c2B2G4z16|\n\nV: Ins\n\nZ4|\n\nV: Vocal\n\n\"Gm\"d2d6c2B2c8c2B2|\"Gm\"G8z16|\n\nV: Ins\n\nZ|z12F4D4F4|\n\n% interlude\n\nV: Vocal\n\n\"Gm\"z24|\"Gm\"z24|\"Gm\"z24|\"Gm\"z24|\n\nV: Ins\n\nG12c4d4f4|g16d4f4|g16f4d4|c2B2G16-G4-|\n\nV: Vocal\n\n\"Gm\"z24|\n\nV: Ins\n\nG12z12|\n\n",
+    "instrumental": false,
+    "options": {
+      "cfg_scale": 6,
+      "num_inference_steps": 16,
+      "semantic_temperature": 0.78,
+      "semantic_top_p": 0.9,
+      "semantic_repetition_penalty": 1.08
+    }
+  }
+}
