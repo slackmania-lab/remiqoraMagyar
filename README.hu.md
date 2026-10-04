@@ -22,7 +22,7 @@
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-0f0f14?style=flat-square">
   <img alt="GPU" src="https://img.shields.io/badge/GPU-NVIDIA%20CUDA%20%7C%20Apple%20Metal-76B900?style=flat-square">
   <img alt="Stack" src="https://img.shields.io/badge/stack-Vue%203%20%2B%20FastAPI-a855f7?style=flat-square">
-  <img alt="Felület nyelvei" src="https://img.shields.io/badge/UI-EN%20%2F%20RU-ec4899?style=flat-square">
+  <img alt="Felület nyelvei" src="https://img.shields.io/badge/UI-EN%20%2F%20RU%20%2F%20HU-ec4899?style=flat-square">
   <a href="https://ko-fi.com/inikolax"><img alt="Támogatás Ko-fi-n" src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white"></a>
 </p>
 
