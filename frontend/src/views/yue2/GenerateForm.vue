@@ -10,6 +10,8 @@ import HelpModal from '../../components/shared/HelpModal.vue'
 import HelpIconButton from '../../components/shared/HelpIconButton.vue'
 import PromptBridge from '../../components/shared/PromptBridge.vue'
 import TagInput from '../../components/shared/TagInput.vue'
+import { downloadRecipe, readRecipeFile } from '../../utils/recipe'
+import type { Recipe } from '../../utils/recipe'
 
 const store = useYue2Store()
 const { t, tm } = useI18n()
@@ -249,6 +251,29 @@ async function submit() {
     formError.value = t('yueGen.enterStyle')
     return
   }
+  const options = buildOptions()
+  // Auto-save a shareable recipe so this exact generation can be repeated later.
+  downloadRecipe({
+    app: 'remiqora',
+    kind: 'recipe',
+    version: 1,
+    engine: 'yue2',
+    title: style.value.trim().slice(0, 60) || 'yue2-track',
+    createdAt: new Date().toISOString(),
+    params: {
+      lyrics: finalLyrics,
+      style: style.value.trim(),
+      cot: cot.value,
+      precision: precision.value,
+      seed: seed.value,
+      randomSeed: randomSeed.value,
+      batchSize: batchSize.value,
+      abc: abc.value,
+      instrumental: instrumental.value,
+      options,
+    },
+    note: randomSeed.value ? 'randomSeed was on: for a bit-exact repeat, copy the seed shown on the finished track card into the seed field and uncheck random.' : undefined,
+  })
   submitting.value = true
   try {
     await store.generateBatch({
@@ -259,11 +284,65 @@ async function submit() {
       baseSeed: Number.isFinite(seed.value) ? seed.value : 831001,
       randomSeed: randomSeed.value,
       batchSize: batchSize.value,
-      options: buildOptions(),
+      options,
       instrumental: instrumental.value,
     })
   } finally {
     submitting.value = false
+  }
+}
+
+const recipeFileInput = ref<HTMLInputElement | null>(null)
+
+function strParam(p: Record<string, unknown>, key: string): string {
+  const v = p[key]
+  return typeof v === 'string' ? v : ''
+}
+
+async function onRecipeFile(e: Event) {
+  formError.value = ''
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (recipeFileInput.value) recipeFileInput.value.value = ''
+  if (!file) return
+  try {
+    const recipe: Recipe = await readRecipeFile(file)
+    if (recipe.engine !== 'yue2') {
+      formError.value = t('aceGen.recipeWrongEngine')
+      return
+    }
+    const p = recipe.params as Record<string, unknown>
+    if (strParam(p, 'lyrics')) {
+      lyrics.value = strParam(p, 'lyrics')
+      instrumental.value = false
+    }
+    if (strParam(p, 'style')) style.value = strParam(p, 'style')
+    if (p.cot === 'off' || p.cot === 'melody' || p.cot === 'full') cot.value = p.cot
+    if (p.precision === 'q8_0' || p.precision === 'q4_0') precision.value = p.precision
+    if (typeof p.seed === 'number' && Number.isFinite(p.seed)) seed.value = p.seed
+    if (typeof p.randomSeed === 'boolean') randomSeed.value = p.randomSeed
+    if (p.batchSize === 1 || p.batchSize === 2 || p.batchSize === 3 || p.batchSize === 4) batchSize.value = p.batchSize
+    if (strParam(p, 'abc')) {
+      abc.value = strParam(p, 'abc')
+      if (cot.value === 'off') cot.value = 'melody'
+    }
+    if (typeof p.instrumental === 'boolean') {
+      instrumental.value = p.instrumental
+      if (p.instrumental && cot.value === 'off') cot.value = 'full'
+    }
+    const opts = p.options
+    if (opts && typeof opts === 'object') {
+      const o = opts as Record<string, unknown>
+      if (typeof o.cfg_scale === 'number') cfgScale.value = o.cfg_scale
+      if (typeof o.num_inference_steps === 'number') numInferenceSteps.value = o.num_inference_steps
+      for (const f of SAMPLING_FIELDS) {
+        const s = o[`semantic_${f.key}`]
+        if (typeof s === 'number') semantic[f.key] = s
+        const a = o[`abc_${f.key}`]
+        if (typeof a === 'number') abcSampling[f.key] = a
+      }
+    }
+  } catch {
+    formError.value = t('aceGen.recipeInvalid')
   }
 }
 </script>
@@ -295,6 +374,15 @@ async function submit() {
         >
           {{ t('aceGen.addPreset') }}
         </button>
+        <button
+          type="button"
+          class="rounded border border-border px-2 py-1 text-xs text-text hover:bg-panel"
+          :title="t('aceGen.recipeImport')"
+          @click="recipeFileInput?.click()"
+        >
+          📥
+        </button>
+        <input ref="recipeFileInput" type="file" accept=".json,application/json" class="hidden" @change="onRecipeFile" />
         <button
           v-if="selectedPresetName"
           type="button"

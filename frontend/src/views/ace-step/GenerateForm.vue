@@ -12,6 +12,8 @@ import HelpModal from '../../components/shared/HelpModal.vue'
 import HelpIconButton from '../../components/shared/HelpIconButton.vue'
 import PromptBridge from '../../components/shared/PromptBridge.vue'
 import TagInput from '../../components/shared/TagInput.vue'
+import { downloadRecipe, readRecipeFile } from '../../utils/recipe'
+import type { Recipe } from '../../utils/recipe'
 
 const store = useAceStepStore()
 const { t, tm } = useI18n()
@@ -408,12 +410,88 @@ async function submit() {
   }
 
   submitting.value = true
+  saveRecipe(title)
   try {
     await store.submit(req, refFile, title)
   } catch (err) {
     formError.value = err instanceof Error ? err.message : String(err)
   } finally {
     submitting.value = false
+  }
+}
+
+function saveRecipe(title: string) {
+  // Auto-save a shareable recipe so this exact generation can be repeated later.
+  // The reference audio file itself can't be embedded — remix recipes note that it must be re-attached.
+  downloadRecipe({
+    app: 'remiqora',
+    kind: 'recipe',
+    version: 1,
+    engine: 'ace_step',
+    title: title || 'ace-step-track',
+    createdAt: new Date().toISOString(),
+    params: {
+      mode: mode.value,
+      simpleQuery: simpleQuery.value,
+      customPrompt: customPrompt.value,
+      instrumental: instrumental.value,
+      customLyrics: customLyrics.value,
+      duration: duration.value,
+      batchSize: batchSize.value,
+      audioFormat: audioFormat.value,
+      bpm: bpm.value,
+      keyScale: keyScale.value,
+      timeSignature: timeSignature.value,
+      vocalLanguage: vocalLanguage.value,
+      inferenceSteps: inferenceSteps.value,
+      guidanceScale: guidanceScale.value,
+      seed: seedValue.value,
+      model: selectedModel.value,
+      taskType: useRefAudio.value ? taskType.value : 'text2music',
+      needsRefAudio: useRefAudio.value,
+      repaintStart: repaintStart.value,
+      repaintEnd: repaintEnd.value,
+      trackName: trackName.value,
+      trackClasses: trackClasses.value,
+      coverStrength: coverStrength.value,
+    },
+    note: seedValue.value == null ? 'seed was random: for a bit-exact repeat, copy the seed shown on the finished track card into the seed field.' : undefined,
+  })
+}
+
+const recipeFileInput = ref<HTMLInputElement | null>(null)
+
+async function onRecipeFile(e: Event) {
+  formError.value = ''
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (recipeFileInput.value) recipeFileInput.value.value = ''
+  if (!file) return
+  try {
+    const recipe: Recipe = await readRecipeFile(file)
+    if (recipe.engine !== 'ace_step') {
+      formError.value = t('aceGen.recipeWrongEngine')
+      return
+    }
+    const p = recipe.params as Record<string, unknown>
+    const str = (key: string): string => (typeof p[key] === 'string' ? (p[key] as string) : '')
+    if (p.mode === 'simple' || p.mode === 'custom') mode.value = p.mode
+    simpleQuery.value = str('simpleQuery')
+    customPrompt.value = str('customPrompt')
+    customLyrics.value = str('customLyrics')
+    if (typeof p.instrumental === 'boolean') instrumental.value = p.instrumental
+    if (typeof p.duration === 'number') duration.value = p.duration
+    if (p.batchSize === 1 || p.batchSize === 2 || p.batchSize === 4) batchSize.value = p.batchSize
+    if (p.audioFormat === 'mp3' || p.audioFormat === 'wav' || p.audioFormat === 'flac') audioFormat.value = p.audioFormat
+    bpm.value = typeof p.bpm === 'number' ? p.bpm : null
+    keyScale.value = str('keyScale')
+    timeSignature.value = str('timeSignature')
+    vocalLanguage.value = str('vocalLanguage')
+    inferenceSteps.value = typeof p.inferenceSteps === 'number' ? p.inferenceSteps : null
+    guidanceScale.value = typeof p.guidanceScale === 'number' ? p.guidanceScale : null
+    seedValue.value = typeof p.seed === 'number' ? p.seed : null
+    if (str('model')) selectedModel.value = str('model')
+  } catch {
+    formError.value = t('aceGen.recipeInvalid')
   }
 }
 </script>
@@ -445,6 +523,15 @@ async function submit() {
         >
           {{ t('aceGen.addPreset') }}
         </button>
+        <button
+          type="button"
+          class="rounded border border-border px-2 py-1 text-xs text-text hover:bg-panel"
+          :title="t('aceGen.recipeImport')"
+          @click="recipeFileInput?.click()"
+        >
+          📥
+        </button>
+        <input ref="recipeFileInput" type="file" accept=".json,application/json" class="hidden" @change="onRecipeFile" />
         <button
           v-if="selectedPresetName"
           type="button"
