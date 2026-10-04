@@ -258,12 +258,14 @@ async function submit() {
     randomSeed.value ? Math.floor(Math.random() * 2147483647) : base + i,
   )
   // Auto-save a shareable recipe so this exact generation can be repeated later.
+  // The seed leads both the recipe filename and the track title.
+  const trackTitle = `${seeds[0]}_${style.value.trim().slice(0, 60) || 'yue2-track'}`
   downloadRecipe({
     app: 'remiqora',
     kind: 'recipe',
     version: 1,
     engine: 'yue2',
-    title: style.value.trim().slice(0, 60) || 'yue2-track',
+    title: trackTitle,
     createdAt: new Date().toISOString(),
     params: {
       lyrics: finalLyrics,

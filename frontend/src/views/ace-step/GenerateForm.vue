@@ -392,6 +392,11 @@ async function submit() {
   }
   if (selectedModel.value) req.model = selectedModel.value
 
+  // The seed leads the track title (and through it the recipe filename) so
+  // tracks sort/find by seed. Only possible with an explicit seed; a random
+  // run keeps the plain title and the recipe notes it.
+  if (seedValue.value != null) title = `${seedValue.value}_${title}`
+
   let refFile: File | null = null
   if (useRefAudio.value) {
     if (!refAudioFile.value) {

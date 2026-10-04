@@ -18,20 +18,27 @@ export interface Recipe {
   note?: string
 }
 
-export function recipeFilename(title: string): string {
+export function recipeFilename(title: string, seed?: number | null): string {
   const clean = (title || 'untitled')
     .replace(/[\\/:*?"<>|]/g, '')
     .trim()
     .slice(0, 80) || 'untitled'
-  return `${clean}.remiqora.json`
+  // The seed leads the filename so recipes sort/find by it: "1495549958_Title.remiqora.json".
+  const prefix = typeof seed === 'number' && Number.isFinite(seed) ? `${seed}_` : ''
+  return `${prefix}${clean}.remiqora.json`
 }
 
 export function downloadRecipe(recipe: Recipe): void {
   const blob = new Blob([JSON.stringify(recipe, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
+  const params = (recipe.params || {}) as Record<string, unknown>
+  const seeds = params.seeds
+  const firstSeed = Array.isArray(seeds) && typeof seeds[0] === 'number'
+    ? (seeds[0] as number)
+    : typeof params.seed === 'number' ? (params.seed as number) : null
   const a = document.createElement('a')
   a.href = url
-  a.download = recipeFilename(recipe.title)
+  a.download = recipeFilename(recipe.title, firstSeed)
   document.body.appendChild(a)
   a.click()
   setTimeout(() => {

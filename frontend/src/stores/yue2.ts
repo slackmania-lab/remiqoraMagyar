@@ -115,7 +115,7 @@ export const useYue2Store = defineStore('yue2', {
           id: `g_${Date.now()}_${i}`,
           status: 'queued',
           createdAt: Date.now(),
-          title: params.style,
+          title: `${seed}_${params.style}`,
           style: params.style,
           lyrics: params.lyrics,
           cot: params.cot,
