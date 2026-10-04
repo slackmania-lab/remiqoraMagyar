@@ -157,6 +157,15 @@ export function precisionSessionOptions(precision: 'q8_0' | 'q4_0'): Record<stri
   return modelSessionOptions(precision)
 }
 
+// Instrumental AR LoRA adapter (Mothersuperior/YuE2-instrumental-cot-full-loras,
+// CC BY-NC 4.0 like the base weights). Lives next to the GGUFs in the model
+// root; paths in session options resolve relative to it.
+export const INSTRUMENTAL_LORA_FILE = 'ar_lora_inst_v3abc.safetensors'
+
+export function instrumentalSessionOptions(): Record<string, string> {
+  return { 'yue2.lora': INSTRUMENTAL_LORA_FILE, 'yue2.lora_scale': '1.0' }
+}
+
 export async function uploadFile(file: File): Promise<string> {
   const match = /\.([A-Za-z0-9]{1,8})$/.exec(file.name)
   const filename = `upload.${(match && match[1] && match[1].toLowerCase()) || 'bin'}`
@@ -183,9 +192,9 @@ export async function runTask(model: string, request: unknown, signal?: AbortSig
   })
 }
 
-export async function generateTrack(lyrics: string, seed: number, options: GenerateOptions, precision: 'q8_0' | 'q4_0', signal?: AbortSignal): Promise<TaskRunResult> {
+export async function generateTrack(lyrics: string, seed: number, options: GenerateOptions, precision: 'q8_0' | 'q4_0', signal?: AbortSignal, sessionExtra?: Record<string, string>): Promise<TaskRunResult> {
   const spec = await getYue2ModelSpec()
-  await ensureLoaded(spec, precisionSessionOptions(precision))
+  await ensureLoaded(spec, { ...precisionSessionOptions(precision), ...(sessionExtra || {}) })
   return runTask(spec.id, { lyrics, seed, options }, signal)
 }
 

@@ -329,7 +329,7 @@ export default {
     submitting: 'Küldés…',
     enterLyrics: 'Add meg a dalszöveget.',
     enterStyle: 'Add meg a stílust, műfajt.',
-    instrumental: 'Instrumentális (ének nélkül – [instrumental] megy).',
+    instrumental: 'Instrumentális (betölti az adaptert, COT fullra vált).',
     cotModeLabel: 'COT mód',
     precisionLabel: 'Modell pontossága',
     cotHints: {

@@ -103,7 +103,7 @@ export const useYue2Store = defineStore('yue2', {
       if (this._healthTimer) clearTimeout(this._healthTimer)
       this._healthTimer = null
     },
-    async generateBatch(params: { lyrics: string; style: string; cot: CotMode; precision: 'q8_0' | 'q4_0'; baseSeed: number; randomSeed: boolean; batchSize: number; options: GenerateOptions }) {
+    async generateBatch(params: { lyrics: string; style: string; cot: CotMode; precision: 'q8_0' | 'q4_0'; baseSeed: number; randomSeed: boolean; batchSize: number; options: GenerateOptions; instrumental?: boolean }) {
       const newJobs: Yue2Job[] = []
       for (let i = 0; i < params.batchSize; i++) {
         const seed = params.randomSeed ? Math.floor(Math.random() * 2147483647) : params.baseSeed + i
@@ -118,9 +118,10 @@ export const useYue2Store = defineStore('yue2', {
           precision: params.precision,
           seed,
           finalized: false,
-          params: { ...params.options, cot: params.cot, precision: params.precision, style: params.style, lyrics: params.lyrics },
+          params: { ...params.options, cot: params.cot, precision: params.precision, style: params.style, lyrics: params.lyrics, instrumental: !!params.instrumental },
         })
       }
+      const sessionExtra = params.instrumental ? api.instrumentalSessionOptions() : undefined
       this.jobs.unshift(...newJobs)
       for (const { id } of newJobs) {
         // Look the job back up through the reactive `jobs` array instead of
@@ -129,16 +130,16 @@ export const useYue2Store = defineStore('yue2', {
         // original (pre-unshift) reference never triggers a re-render even
         // though the same data ends up saved to the server correctly.
         const job = this.jobs.find((j) => j.id === id)
-        if (job) await this._generateOne(job, params.options)
+        if (job) await this._generateOne(job, params.options, sessionExtra)
       }
     },
-    async _generateOne(job: Yue2Job, options: GenerateOptions) {
+    async _generateOne(job: Yue2Job, options: GenerateOptions, sessionExtra?: Record<string, string>) {
       job.status = 'running'
       const aborter = new AbortController()
       this._aborters[job.id] = aborter
       try {
         const started = performance.now()
-        const result = await api.generateTrack(job.lyrics, job.seed, options, job.precision, aborter.signal)
+        const result = await api.generateTrack(job.lyrics, job.seed, options, job.precision, aborter.signal, sessionExtra)
         const wallMs = result.timing?.wall_ms ?? performance.now() - started
         const durationMs = result.timing?.audio_duration_ms
         if (typeof result.audio !== 'string') throw new Error(t('storeErrors.serverNoAudio'))

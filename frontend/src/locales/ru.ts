@@ -329,7 +329,7 @@ export default {
     submitting: 'Отправка…',
     enterLyrics: 'Введите текст песни.',
     enterStyle: 'Укажите стиль/жанр.',
-    instrumental: 'Инструментал (без вокала — отправит [instrumental]).',
+    instrumental: 'Инструментал (подгружает адаптер, включает COT full).',
     cotModeLabel: 'COT-режим',
     precisionLabel: 'Точность модели',
     cotHints: {

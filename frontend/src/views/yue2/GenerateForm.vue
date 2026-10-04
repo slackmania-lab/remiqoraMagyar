@@ -216,6 +216,8 @@ function onInstrumentalChange() {
   // The [instrumental] marker biases YuE2 toward no-vocal output. Without the
   // dedicated instrumental LoRA adapter some vocal traces may remain.
   if (instrumental.value && !lyrics.value.trim()) lyrics.value = '[instrumental]'
+  // The instrumental adapter requires the full CoT route (melody+chords plan).
+  if (instrumental.value && cot.value === 'off') cot.value = 'full'
 }
 
 function buildOptions(): GenerateOptions {
@@ -258,6 +260,7 @@ async function submit() {
       randomSeed: randomSeed.value,
       batchSize: batchSize.value,
       options: buildOptions(),
+      instrumental: instrumental.value,
     })
   } finally {
     submitting.value = false
