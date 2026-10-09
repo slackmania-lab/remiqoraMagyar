@@ -27,6 +27,35 @@ export async function preparePrompt(text: string, target: string, model?: string
   return apiJson<PromptPrepareResult>('/api/prompt/prepare', { text, target, model: model || '', src_lang: srcLang || 'auto' })
 }
 
+export interface LyricLang {
+  code: string
+  label: string
+}
+
+export const LYRIC_LANGS: LyricLang[] = [
+  { code: 'en', label: 'English' },
+  { code: 'hu', label: 'Magyar' },
+  { code: 'ar', label: 'العربية' },
+  { code: 'sv', label: 'Svenska' },
+  { code: 'no', label: 'Norsk' },
+  { code: 'da', label: 'Dansk' },
+  { code: 'de', label: 'Deutsch' },
+  { code: 'fr', label: 'Français' },
+  { code: 'it', label: 'Italiano' },
+  { code: 'pt', label: 'Português' },
+  { code: 'es', label: 'Español' },
+]
+
+export interface LyricsResult {
+  lyrics: string
+  lang: string
+  model: string
+}
+
+export async function writeLyrics(theme: string, lang: string, verses: number, chorus: boolean, model?: string): Promise<LyricsResult> {
+  return apiJson<LyricsResult>('/api/prompt/lyrics', { theme, lang, verses, chorus, model: model || '' })
+}
+
 export async function promptStatus(): Promise<PromptStatus> {
   return apiFetch<PromptStatus>('/api/prompt/status')
 }

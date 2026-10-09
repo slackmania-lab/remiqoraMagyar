@@ -9,6 +9,7 @@ import CollapsibleDetails from '../../components/shared/CollapsibleDetails.vue'
 import HelpModal from '../../components/shared/HelpModal.vue'
 import HelpIconButton from '../../components/shared/HelpIconButton.vue'
 import PromptBridge from '../../components/shared/PromptBridge.vue'
+import LyricistBox from '../../components/shared/LyricistBox.vue'
 import TagInput from '../../components/shared/TagInput.vue'
 import { downloadRecipe, readRecipeFile } from '../../utils/recipe'
 import type { Recipe } from '../../utils/recipe'
@@ -199,6 +200,13 @@ async function extractAbc() {
       }
     }
     extracting.value = false
+  }
+}
+
+function onLyricsApply(text: string) {
+  if (text) {
+    lyrics.value = text
+    instrumental.value = false
   }
 }
 
@@ -432,6 +440,8 @@ async function onRecipeFile(e: Event) {
       </div>
 
       <PromptBridge target="yue2" @apply="onPromptApply" />
+
+      <LyricistBox @apply="onLyricsApply" />
 
       <div class="space-y-1.5">
         <div class="flex items-center justify-between">

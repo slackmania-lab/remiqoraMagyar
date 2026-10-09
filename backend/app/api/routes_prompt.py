@@ -186,3 +186,104 @@ async def prompt_prepare(body: PrepareIn):
     if not out.style_en and not out.simple and raw.strip():
         out.simple = raw.strip()[:500]
     return out
+
+
+LYRICS_SYSTEM_PROMPT = (
+    "You are a songwriter writing original lyrics for an AI music studio. "
+    "The theme may arrive in any language (often Hungarian); the SONG itself "
+    "must be written in the requested language. "
+    "Output the lyrics ONLY: section headers like [Verse 1], [Verse 2], [Chorus], "
+    "[Bridge], [Outro] on their own lines, then the lines. No titles, no "
+    "commentary, no explanations, no markdown fences. "
+    "Rules: short singable lines (roughly 6-10 syllables), real rhymes (not "
+    "assonance soup), concrete images over abstractions, one clear emotion per "
+    "song, chorus with a hook that repeats verbatim. Never reuse famous "
+    "copyrighted lyrics. Keep it under 2000 characters."
+)
+
+# ISO code -> language name used inside the lyricist prompt.
+LYRICS_LANGS: dict[str, str] = {
+    "en": "English",
+    "hu": "Hungarian",
+    "ar": "Arabic",
+    "sv": "Swedish",
+    "no": "Norwegian",
+    "da": "Danish",
+    "de": "German",
+    "fr": "French",
+    "it": "Italian",
+    "pt": "Portuguese",
+    "es": "Spanish",
+}
+
+LYRIC_DEFAULT_MODELS = ("qwen3:8b", "qwen3.5:9b", "llama3.1:8b")
+
+
+class LyricsIn(BaseModel):
+    theme: str = Field(min_length=1, max_length=1000)
+    lang: str = Field(default="en", max_length=8)
+    verses: int = Field(default=3, ge=1, le=8)
+    chorus: bool = Field(default=True)
+    model: str = Field(default="", max_length=64)
+
+
+class LyricsOut(BaseModel):
+    lyrics: str = ""
+    lang: str = ""
+    model: str = ""
+
+
+def _resolve_lyric_model(names: list[str], want: str) -> str:
+    want = (want or "").strip()
+    if want and want in names:
+        return want
+    for candidate in LYRIC_DEFAULT_MODELS:
+        if candidate in names:
+            return candidate
+    if OLLAMA_MODEL in names:
+        return OLLAMA_MODEL
+    return ""
+
+
+@router.post("/lyrics", response_model=LyricsOut)
+async def prompt_lyrics(body: LyricsIn):
+    from fastapi import HTTPException
+
+    lang = (body.lang or "en").strip().lower()
+    if lang not in LYRICS_LANGS:
+        raise HTTPException(status_code=400, detail=f"Unsupported lyrics language: {body.lang}")
+    theme = " ".join(body.theme.split())
+    structure = f"{body.verses} verse(s)" + (", plus a repeating [Chorus] after every second verse" if body.chorus else ", no chorus")
+    try:
+        async with httpx.AsyncClient(timeout=420.0) as client:
+            names = await _ollama_models(client)
+            model = _resolve_lyric_model(names, body.model)
+            if not model:
+                raise HTTPException(status_code=502, detail="No suitable Ollama model pulled (need e.g. qwen3:8b)")
+            resp = await client.post(
+                f"{OLLAMA_HOST}/api/chat",
+                json={
+                    "model": model,
+                    "stream": False,
+                    "options": {"temperature": 0.8},
+                    "messages": [
+                        {"role": "system", "content": LYRICS_SYSTEM_PROMPT},
+                        {
+                            "role": "user",
+                            "content": f"Language: {LYRICS_LANGS[lang]}\nStructure: {structure}\nTheme: {theme}",
+                        },
+                    ],
+                },
+            )
+            resp.raise_for_status()
+            raw = resp.json().get("message", {}).get("content", "")
+    except HTTPException:
+        raise
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Ollama unreachable: {exc}") from exc
+    lyrics = _extract_json(raw).get("lyrics") if raw.strip().startswith("{") else None
+    text = str(lyrics or raw).strip()[:3000]
+    # Strip accidental fences/prose wrappers models sometimes add.
+    text = re.sub(r"^```(?:\w+)?\s*", "", text)
+    text = re.sub(r"\s*```$", "", text).strip()
+    return LyricsOut(lyrics=text, lang=lang, model=model)

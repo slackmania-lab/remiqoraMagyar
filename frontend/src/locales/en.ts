@@ -790,6 +790,18 @@ export default {
     downloadTitle: 'Download the selected variant',
     downloadVariant: 'Download variant #{n}',
   },
+  lyricist: {
+    title: 'Have lyrics written',
+    hint: 'Ollama writes them on CPU',
+    placeholder: 'Theme in any language, e.g.: elhagyott kikötő, őszi eső…',
+    submit: 'Write lyrics',
+    working: 'Writing…',
+    apply: 'Insert into lyrics',
+    langTitle: 'Lyrics language',
+    modelTitle: 'Ollama model for writing',
+    verses: 'Verses',
+    chorus: '+ chorus',
+  },
   promptBridge: {
     title: 'Prompt in Hungarian / any language',
     hint: 'Ollama translates it to English style tags',

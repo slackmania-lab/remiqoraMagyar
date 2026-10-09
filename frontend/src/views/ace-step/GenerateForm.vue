@@ -11,6 +11,7 @@ import CollapsibleDetails from '../../components/shared/CollapsibleDetails.vue'
 import HelpModal from '../../components/shared/HelpModal.vue'
 import HelpIconButton from '../../components/shared/HelpIconButton.vue'
 import PromptBridge from '../../components/shared/PromptBridge.vue'
+import LyricistBox from '../../components/shared/LyricistBox.vue'
 import TagInput from '../../components/shared/TagInput.vue'
 import { downloadRecipe, readRecipeFile } from '../../utils/recipe'
 import type { Recipe } from '../../utils/recipe'
@@ -324,8 +325,15 @@ function registerNewLora() {
   newLoraPath.value = ''
 }
 
-function onPromptApply(r: { style_en: string; lyrics: string; simple: string; vocal_language: string }) {
-  if (mode.value === 'simple') {
+function onLyricsApply(text: string, lang: string) {
+  if (text) {
+    customLyrics.value = text
+    instrumental.value = false
+    if (lang && VOCAL_LANGUAGES.some((l) => l.code === lang)) vocalLanguage.value = lang
+  }
+}
+
+function onPromptApply(r: { style_en: string; lyrics: string; simple: string; vocal_language: string }) {  if (mode.value === 'simple') {
     simpleQuery.value = r.simple || r.style_en
   } else {
     if (r.style_en) customPrompt.value = r.style_en
@@ -609,6 +617,7 @@ async function onRecipeFile(e: Event) {
           {{ t('aceGen.instrumental') }}
         </label>
         <div v-if="!instrumental" class="space-y-1.5">
+          <LyricistBox @apply="onLyricsApply" />
           <div class="flex items-center justify-between">
             <label class="text-[13px] font-medium text-text">{{ t('aceGen.lyricsLabel') }}</label>
             <HelpIconButton @click="helpOpen = 'lyrics'" />

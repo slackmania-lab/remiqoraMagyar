@@ -790,6 +790,18 @@ export default {
     downloadTitle: 'Скачать выбранный вариант',
     downloadVariant: 'Скачать вариант #{n}',
   },
+  lyricist: {
+    title: 'Заказать текст песни',
+    hint: 'Ollama пишет на CPU',
+    placeholder: 'Тема на любом языке, например: elhagyott kikötő, őszi eső…',
+    submit: 'Написать текст',
+    working: 'Пишу…',
+    apply: 'Вставить в текст песни',
+    langTitle: 'Язык текста песни',
+    modelTitle: 'Модель Ollama для написания',
+    verses: 'Куплеты',
+    chorus: '+ припев',
+  },
   promptBridge: {
     title: 'Промпт на венгерском / любом языке',
     hint: 'Ollama переведёт в английские style-теги',
