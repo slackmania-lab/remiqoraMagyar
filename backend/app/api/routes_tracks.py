@@ -78,6 +78,7 @@ def _row_to_dict(row) -> dict:
             else None
         ),
         "favorite": bool(row["favorite"]) if "favorite" in row.keys() else False,
+        "cover_url": f"/api/tracks/{row['id']}/cover" if ("cover_path" in row.keys() and row["cover_path"]) else None,
     }
 
 

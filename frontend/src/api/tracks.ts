@@ -17,6 +17,7 @@ export interface SavedTrack {
   stems: Record<string, string> | null
   midi: Record<string, string> | null
   favorite: boolean
+  cover_url: string | null
 }
 
 export interface SaveTrackMeta {
@@ -62,6 +63,24 @@ export function renameTrack(id: number, title: string): Promise<SavedTrack> {
 
 export function setTrackFavorite(id: number, favorite: boolean): Promise<SavedTrack> {
   return apiJson<SavedTrack>(`/api/tracks/${id}/favorite`, { favorite }, 'PUT')
+}
+
+export interface CoverStatus {
+  status: string
+  error?: string
+  url?: string | null
+}
+
+export async function requestCover(id: number, prompt: string, seed?: number): Promise<CoverStatus> {
+  return apiJson<CoverStatus>(`/api/tracks/${id}/cover`, { prompt, seed })
+}
+
+export async function coverStatus(id: number): Promise<CoverStatus> {
+  return apiFetch<CoverStatus>(`/api/tracks/${id}/cover/status`)
+}
+
+export async function cancelCover(id: number): Promise<CoverStatus> {
+  return apiFetch<CoverStatus>(`/api/tracks/${id}/cover/cancel`, { method: 'POST' })
 }
 
 export async function deleteTrack(id: number): Promise<void> {

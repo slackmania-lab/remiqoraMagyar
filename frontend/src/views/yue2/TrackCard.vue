@@ -15,6 +15,7 @@ import StyleChips from '../../components/shared/StyleChips.vue'
 import CardMenu from '../../components/shared/CardMenu.vue'
 import type { MenuItem } from '../../components/shared/CardMenu.vue'
 import DownloadIcon from '../../components/shared/icons/DownloadIcon.vue'
+import CoverArt from '../../components/shared/CoverArt.vue'
 import ChevronIcon from '../../components/shared/icons/ChevronIcon.vue'
 import ReuseIcon from '../../components/shared/icons/ReuseIcon.vue'
 import TrashIcon from '../../components/shared/icons/TrashIcon.vue'
@@ -131,6 +132,12 @@ function copyParamsToForm() {
             @rename="(title) => store.renameJob(job, title)"
           />
           <div class="ml-auto flex shrink-0 items-center gap-1">
+            <CoverArt
+              v-if="job.status === 'done'"
+              :db-id="job.dbId ?? null"
+              :prompt="`${job.title}, ${job.style}, album cover art`"
+              :initial-url="job.coverUrl ?? null"
+            />
             <div v-if="job.status === 'done' && job.durationSec" class="mr-1 hidden border-r border-border/60 pr-3 text-right @min-[640px]:block">
               <p class="text-sm font-semibold tabular-nums text-text" :title="`${Math.round(job.durationSec)} ${t('common.secondsUnit')}`">{{ formatClock(job.durationSec) }}</p>
             </div>

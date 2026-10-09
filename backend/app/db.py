@@ -62,6 +62,9 @@ def get_db() -> sqlite3.Connection:
         if "favorite" not in cols:
             _db.execute("ALTER TABLE tracks ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0")
             _db.commit()
+        if "cover_path" not in cols:
+            _db.execute("ALTER TABLE tracks ADD COLUMN cover_path TEXT")
+            _db.commit()
         _db.execute(
             """
             CREATE TABLE IF NOT EXISTS projects (
@@ -157,6 +160,12 @@ def set_track_favorite(track_id: int, favorite: bool) -> bool:
     db.execute("UPDATE tracks SET favorite = ? WHERE id = ?", (1 if favorite else 0, track_id))
     db.commit()
     return True
+
+
+def set_track_cover(track_id: int, path: Optional[str]) -> None:
+    db = get_db()
+    db.execute("UPDATE tracks SET cover_path = ? WHERE id = ?", (path, track_id))
+    db.commit()
 
 
 def update_track_stems(track_id: int, stems: Optional[dict[str, str]]) -> None:
@@ -279,6 +288,11 @@ def delete_track(track_id: int) -> bool:
                 Path(p).unlink(missing_ok=True)
             except OSError:
                 pass
+    if row["cover_path"] if "cover_path" in row.keys() else None:
+        try:
+            Path(row["cover_path"]).unlink(missing_ok=True)
+        except OSError:
+            pass
     if row["stems_json"]:
         shutil.rmtree(stems_dir(row["model"], track_id), ignore_errors=True)
     if row["midi_json"]:

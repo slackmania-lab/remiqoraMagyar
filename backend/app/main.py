@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
 from .api.routes_lora_dataset import router as lora_dataset_router
+from .api.routes_cover import router as cover_router
 from .api.routes_gpu import router as gpu_router
 from .api.routes_midi import router as midi_router
 from .api.routes_orchestrator import router as orchestrator_router
@@ -32,6 +33,7 @@ app = FastAPI(title="Remiqora", lifespan=lifespan)
 
 app.include_router(orchestrator_router)
 app.include_router(tracks_router)
+app.include_router(cover_router)
 app.include_router(stems_router)
 app.include_router(midi_router)
 app.include_router(projects_router)

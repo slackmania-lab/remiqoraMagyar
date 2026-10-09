@@ -32,6 +32,7 @@ export interface Yue2Job {
   dbId?: number | null
   finalized: boolean
   favorite: boolean
+  coverUrl?: string | null
   params?: Record<string, any>
 }
 
@@ -77,6 +78,7 @@ export const useYue2Store = defineStore('yue2', {
           dbId: t.id,
           finalized: true,
           favorite: t.favorite,
+          coverUrl: t.cover_url,
           params: t.params,
         }))
         // Keep any jobs still in-flight this session (not yet in the saved list).
@@ -132,6 +134,7 @@ export const useYue2Store = defineStore('yue2', {
           seed,
           finalized: false,
           favorite: false,
+          coverUrl: null,
           params: { ...params.options, cot: params.cot, precision: params.precision, style: params.style, lyrics: params.lyrics, instrumental: !!params.instrumental },
         })
       }
@@ -185,6 +188,7 @@ export const useYue2Store = defineStore('yue2', {
           job.saveError = null
           job.dbId = saved.id
           job.favorite = saved.favorite
+          job.coverUrl = saved.cover_url
         } catch (err) {
           job.savedFilename = null
           job.saveError = err instanceof Error ? err.message : String(err)

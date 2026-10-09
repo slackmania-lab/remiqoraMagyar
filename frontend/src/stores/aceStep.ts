@@ -28,6 +28,7 @@ export interface AceJob {
   dbIds: number[]
   finalized: boolean
   favorite: boolean
+  coverUrl?: string | null
   durationSec?: number | null
   params?: Record<string, any>
 }
@@ -80,6 +81,7 @@ export const useAceStepStore = defineStore('aceStep', {
           dbIds: [t.id],
           finalized: true,
           favorite: t.favorite,
+          coverUrl: t.cover_url,
           durationSec: t.duration_ms ? t.duration_ms / 1000 : null,
           params: t.params,
         }))
@@ -233,6 +235,7 @@ export const useAceStepStore = defineStore('aceStep', {
         dbIds: [],
         finalized: false,
         favorite: false,
+        coverUrl: null,
         params: { ...req },
       }
       this.jobs.unshift(job)
