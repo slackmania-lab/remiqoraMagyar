@@ -112,6 +112,7 @@ export default {
     deleteShort: 'Delete?',
     favorite: 'Favorite',
     cover: 'Cover art',
+    coverDownload: 'Download cover art',
     coverGenerate: 'Generate cover art from the style (CPU, takes a few minutes)',
     coverWorking: 'Rendering cover',
     confirmDelete: 'Click again to delete',

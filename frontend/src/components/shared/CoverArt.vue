@@ -67,6 +67,16 @@ async function generate() {
     <a v-if="url" :href="url" target="_blank" rel="noopener" :title="t('trackCard.cover')">
       <img :src="url" :alt="t('trackCard.cover')" class="h-14 w-14 rounded-lg border border-border object-cover" loading="lazy" />
     </a>
+    <a
+      v-if="url"
+      :href="url"
+      download
+      class="flex h-8 w-8 items-center justify-center rounded-lg text-text-dim hover:bg-panel-2 hover:text-text"
+      :title="t('trackCard.coverDownload')"
+      :aria-label="t('trackCard.coverDownload')"
+    >
+      ⬇
+    </a>
     <button
       v-if="dbId != null && !url && !working"
       type="button"

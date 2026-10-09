@@ -112,6 +112,7 @@ export default {
     deleteShort: 'Törlöd?',
     favorite: 'Kedvenc',
     cover: 'Borítókép',
+    coverDownload: 'Borítókép letöltése',
     coverGenerate: 'Borítókép generálása a stílusból (CPU, pár perc)',
     coverWorking: 'Rajzolom a borítót',
     confirmDelete: 'Kattints újra a törléshez',

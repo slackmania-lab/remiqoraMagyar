@@ -112,6 +112,7 @@ export default {
     deleteShort: 'Удалить?',
     favorite: 'В избранное',
     cover: 'Обложка',
+    coverDownload: 'Скачать обложку',
     coverGenerate: 'Сгенерировать обложку по стилю (CPU, несколько минут)',
     coverWorking: 'Рисую обложку',
     confirmDelete: 'Нажмите ещё раз, чтобы удалить',
