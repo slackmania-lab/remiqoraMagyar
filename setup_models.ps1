@@ -267,22 +267,23 @@ if ($SkipWeights) {
     Write-Host "Skipped NLLB download - install uv and re-run this script (or set TRANSLATOR=ollama in backend/.env)." -ForegroundColor Yellow
 }
 
-Write-Step "SD-Turbo cover-art weights (~4 GB)"
-# Cover images for tracks (backend/app/cover.py, CPU-only SD-Turbo).
-# Downloaded once into backend/data/sd-turbo (gitignored); without it the
-# cover button reports weights-missing instead of rendering.
-$nlibDir = Join-Path $root "backend\data\sd-turbo"
+Write-Step "SDXL-Turbo cover-art weights (~7 GB)"
+# Cover images for tracks (backend/app/cover.py, CPU-only SDXL-Turbo with
+# SD-Turbo fallback). Downloaded once into backend/data/sdxl-turbo
+# (gitignored); without it the cover button reports weights-missing instead
+# of rendering.
+$nlibDir = Join-Path $root "backend\data\sdxl-turbo"
 if ($SkipWeights) {
-    Write-Host "Skipping SD-Turbo download (-SkipWeights passed)."
+    Write-Host "Skipping SDXL-Turbo download (-SkipWeights passed)."
 } elseif (Test-Path (Join-Path $nlibDir "model_index.json")) {
-    Write-Host "SD-Turbo weights already present, skipping."
+    Write-Host "SDXL-Turbo weights already present, skipping."
 } elseif (Assert-Command "uvx" "Install uv from https://docs.astral.sh/uv/getting-started/installation/ (uvx ships with it).") {
-    Write-Host "Downloading stabilityai/sd-turbo ..."
-    uvx --from huggingface_hub huggingface-cli download stabilityai/sd-turbo `
+    Write-Host "Downloading stabilityai/sdxl-turbo ..."
+    uvx --from huggingface_hub huggingface-cli download stabilityai/sdxl-turbo `
         --local-dir $nlibDir `
-        --exclude "*.msgpack" --exclude "*.h5" --exclude "*.ot" --exclude "*.onnx" --exclude "*fp16*"
+        --exclude "*.msgpack" --exclude "*.h5" --exclude "*.ot" --exclude "*.onnx" --exclude "*fp8*"
 } else {
-    Write-Host "Skipped SD-Turbo download - install uv and re-run this script." -ForegroundColor Yellow
+    Write-Host "Skipped SDXL-Turbo download - install uv and re-run this script." -ForegroundColor Yellow
 }
 
 Write-Step "backend/.env"

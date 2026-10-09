@@ -312,20 +312,20 @@ else
     echo "Skipped NLLB download - install uv and re-run this script (or set TRANSLATOR=ollama in backend/.env)."
 fi
 
-step "SD-Turbo cover-art weights (~4 GB)"
-# Cover images for tracks (backend/app/cover.py, CPU-only SD-Turbo).
-SDTURBO_DIR="$ROOT/backend/data/sd-turbo"
+step "SDXL-Turbo cover-art weights (~7 GB)"
+# Cover images for tracks (backend/app/cover.py, CPU-only SDXL-Turbo).
+SDTURBO_DIR="$ROOT/backend/data/sdxl-turbo"
 if [[ "$SKIP_WEIGHTS" == "1" ]]; then
-    echo "Skipping SD-Turbo download (--skip-weights passed)."
+    echo "Skipping SDXL-Turbo download (--skip-weights passed)."
 elif [[ -f "$SDTURBO_DIR/model_index.json" ]]; then
-    echo "SD-Turbo weights already present, skipping."
+    echo "SDXL-Turbo weights already present, skipping."
 elif command -v uvx >/dev/null 2>&1; then
-    echo "Downloading stabilityai/sd-turbo ..."
-    uvx --from huggingface_hub huggingface-cli download stabilityai/sd-turbo \
+    echo "Downloading stabilityai/sdxl-turbo ..."
+    uvx --from huggingface_hub huggingface-cli download stabilityai/sdxl-turbo \
         --local-dir "$SDTURBO_DIR" \
-        --exclude "*.msgpack" --exclude "*.h5" --exclude "*.ot" --exclude "*.onnx" --exclude "*fp16*"
+        --exclude "*.msgpack" --exclude "*.h5" --exclude "*.ot" --exclude "*.onnx" --exclude "*fp8*"
 else
-    echo "Skipped SD-Turbo download - install uv and re-run this script."
+    echo "Skipped SDXL-Turbo download - install uv and re-run this script."
 fi
 
 step "backend/.env"

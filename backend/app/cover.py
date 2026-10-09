@@ -1,4 +1,4 @@
-"""Cover-art generation (Stable Diffusion Turbo, CPU-only).
+"""Cover-art generation (SDXL-Turbo preferred, SD-Turbo fallback — CPU-only).
 
 One PNG per track, rendered from the track's style prompt on the CPU so it
 never fights the music engines for VRAM. Same one-shot job pattern as stems:
@@ -20,7 +20,18 @@ from pathlib import Path
 
 from .config import DATA_DIR
 
-SD_DIR = DATA_DIR / "sd-turbo"
+# Preferred first: SDXL-Turbo (smarter, still 1 step), fallback to SD-Turbo.
+# Directories live under DATA_DIR (gitignored) and are fetched by the setup
+# scripts; either one present is enough.
+MODEL_CANDIDATES: list[tuple[str, int]] = [("sdxl-turbo", 1), ("sd-turbo", 2)]
+
+
+def _active_model() -> tuple[Path, int]:
+    for name, steps in MODEL_CANDIDATES:
+        d = DATA_DIR / name
+        if (d / "model_index.json").is_file():
+            return d, steps
+    return DATA_DIR / MODEL_CANDIDATES[0][0], MODEL_CANDIDATES[0][1]
 
 _lock = asyncio.Lock()
 
@@ -35,25 +46,31 @@ class CoverJob:
 
 _jobs: dict[int, CoverJob] = {}
 _pipe = None
+_pipe_steps = 1
+_pipe_dir: Path | None = None
 
 
 def weights_present() -> bool:
-    return (SD_DIR / "model_index.json").is_file()
+    d, _ = _active_model()
+    return (d / "model_index.json").is_file()
 
 
 def _ensure_pipe():
-    global _pipe
-    if _pipe is not None:
+    global _pipe, _pipe_steps, _pipe_dir
+    model_dir, steps = _active_model()
+    if _pipe is not None and _pipe_dir == model_dir:
         return _pipe
-    if not weights_present():
-        raise RuntimeError(f"SD-Turbo weights missing in {SD_DIR}")
+    if not (model_dir / "model_index.json").is_file():
+        raise RuntimeError(f"Cover model weights missing in {model_dir}")
     import torch
     from diffusers import AutoPipelineForText2Image
 
     torch.set_num_threads(max(1, (torch.get_num_threads() or 4)))
-    _pipe = AutoPipelineForText2Image.from_pretrained(str(SD_DIR), torch_dtype=torch.float32)
+    _pipe = AutoPipelineForText2Image.from_pretrained(str(model_dir), torch_dtype=torch.float32)
     _pipe.to("cpu")
     _pipe.set_progress_bar_config(disable=True)
+    _pipe_steps = steps
+    _pipe_dir = model_dir
     return _pipe
 
 
@@ -113,7 +130,7 @@ async def _run(track_id: int, job: CoverJob) -> None:
 
             img = pipe(
                 prompt,
-                num_inference_steps=2,
+                num_inference_steps=_pipe_steps,
                 guidance_scale=0.0,
                 height=512,
                 width=512,
