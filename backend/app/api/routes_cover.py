@@ -63,9 +63,12 @@ async def cover_status(track_id: int):
     if not row:
         raise HTTPException(status_code=404, detail="track not found")
     data = _job_to_dict(track_id)
-    if data["status"] in ("idle", "cancelled", "failed"):
-        data["status"] = "done" if (row["cover_path"] if "cover_path" in row.keys() else None) else "idle"
-    data["url"] = f"/api/tracks/{track_id}/cover" if data["status"] == "done" else None
+    has_file = bool(row["cover_path"] if "cover_path" in row.keys() else None)
+    # A failed job must stay "failed" even when an older cover file exists;
+    # otherwise the UI would show a stale image as a fresh success.
+    if data["status"] in ("idle", "cancelled") and has_file:
+        data["status"] = "done"
+    data["url"] = f"/api/tracks/{track_id}/cover" if has_file else None
     return data
 
 
