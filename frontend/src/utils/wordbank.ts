@@ -64,7 +64,8 @@ const P_GENRES = [
   'rock', 'techno', 'folk', 'blues', 'metal', 'pop', 'jazz', 'ambient',
   'punk', 'country', 'reggae', 'szintipop', 'ballada', 'keringő', 'rap',
   'sanzon', 'operett', 'musical', 'gospel', 'soul', 'funk', 'disco',
-  'grunge', 'indie', 'lofi', 'drum and bass', 'hardstyle',
+  'grunge', 'indie', 'lofi', 'drum and bass', 'hardstyle', 'skandináv',
+  'norvég folk', 'izlandi', 'tuareg', 'indiai', 'szaharai',
 ]
 
 const P_INSTRUMENTS = [
@@ -90,7 +91,7 @@ const P_EXTRAS = [
 
 const P_ERAS = [
   '80-as évek', 'középkori hangulat', 'futurisztikus', '60-as évek',
-  'mesebeli', '70-es évek', 'barokk', 'űrkorszak',
+  'mesebeli', '70-es évek', 'barokk', 'vadnyugati', 'viking', 'űrkorszak',
 ]
 
 /** One random Hungarian song description for the prompt bridge. */

@@ -42,15 +42,16 @@ _BANNED_NAMES = frozenset(
     "francia olasz spanyol portugál holland lengyel cseh szlovák román szerb "
     "horvát szlovén ukrán osztrák svájci görög japán kínai indiai egyiptomi "
     "törökök arabok párizs london berlin moszkva bécs prága varsó amszterdam "
-    "róma madrid lisszabon istanbul kairó".split()
+    "róma madrid lisszabon istanbul kairó tuareg berber norvég norvégia "
+    "izlandi izland skandináv skandinávia szahara szaharai inuit eszkimó "
+    "maori aborigin lapp".split()
 )
 
 
-def _is_name(word: str) -> bool:
-    return bool(word) and (word[0].isupper() or word.lower() in _BANNED_NAMES)
-
-
-def _clean_bank(raw: dict, allowed: tuple[str, ...]) -> dict[str, list[str]]:
+def _clean_bank(raw: dict, allowed: tuple[str, ...], strict_geo: bool = True) -> dict[str, list[str]]:
+    """strict_geo=False (prompt bank): style descriptors like norvég/tuareg are
+    legit, so only capitalized proper names are dropped. strict_geo=True
+    (theme bank): the lowercase denylist applies too."""
     if not isinstance(raw, dict):
         raise HTTPException(status_code=400, detail="wordbank must be an object")
     out: dict[str, list[str]] = {}
@@ -64,7 +65,11 @@ def _clean_bank(raw: dict, allowed: tuple[str, ...]) -> dict[str, list[str]]:
             w = " ".join(w.split())[:_MAX_LEN]
             parts = w.split()
             # Drop entries containing any proper/geographic name.
-            if not w or any(_is_name(p.strip(".,;:!?()\"'’") or " ") for p in parts):
+            def _bad(p: str) -> bool:
+                core = p.strip(".,;:!?()\"'’") or " "
+                return core[0].isupper() or (strict_geo and core.lower() in _BANNED_NAMES)
+
+            if not w or any(_bad(p) for p in parts):
                 continue
             if w.lower() not in (s.lower() for s in seen):
                 seen.append(w)
@@ -95,16 +100,16 @@ async def get_wordbanks():
     except ValueError:
         data = {}
     return {
-        "prompt": _clean_bank(data.get("prompt", {}), PROMPT_CATS),
-        "theme": _clean_bank(data.get("theme", {}), THEME_CATS),
+        "prompt": _clean_bank(data.get("prompt", {}), PROMPT_CATS, strict_geo=False),
+        "theme": _clean_bank(data.get("theme", {}), THEME_CATS, strict_geo=True),
     }
 
 
 @router.put("/wordbanks")
 async def put_wordbanks(body: WordbanksBody):
     data = {
-        "prompt": _clean_bank(body.prompt, PROMPT_CATS),
-        "theme": _clean_bank(body.theme, THEME_CATS),
+        "prompt": _clean_bank(body.prompt, PROMPT_CATS, strict_geo=False),
+        "theme": _clean_bank(body.theme, THEME_CATS, strict_geo=True),
     }
     db.set_setting(WORDBANK_KEY, json.dumps(data, ensure_ascii=False))
     return data

@@ -809,7 +809,7 @@ export default {
     title: 'Settings',
     subtitle: 'Your own words for the dice: they are added to the built-in word banks.',
     promptBank: 'Prompt word bank',
-    promptHint: 'Extra words for the 🎲 in the prompt bridge, one per line. Added to the built-ins. Common nouns only, lowercase — no city, country or personal names.',
+    promptHint: 'Extra words for the 🎲 in the prompt bridge, one per line. Style descriptors welcome; capitalized names are dropped.',
     themeBank: 'Lyrics theme bank',
     themeHint: 'Extra words for the 🎲 in the lyricist, one per line. Added to the built-ins. Common nouns only, lowercase — no city, country or personal names.',
     wordPlaceholder: 'one word or phrase per line…',

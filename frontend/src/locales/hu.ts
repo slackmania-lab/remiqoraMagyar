@@ -811,7 +811,7 @@ export default {
     title: 'Beállítások',
     subtitle: 'Saját szavaid a kockához: hozzáadódnak a beépített szószedethez.',
     promptBank: 'Prompt-szószedet',
-    promptHint: 'Plusz szavak a híd 🎲 gombjához, soronként egy. A beépítettekhez adódnak. Csak köznevek, kisbetűvel — város-, ország- és személynevek nem mehetnek.',
+    promptHint: 'Plusz szavak a híd 🎲 gombjához, soronként egy. Stílusjelzők (pl. norvég, tuareg) mehetnek; nagybetűs nevek nem.',
     themeBank: 'Dalszöveg-témák',
     themeHint: 'Plusz szavak a szövegíró 🎲 gombjához, soronként egy. A beépítettekhez adódnak. Csak köznevek, kisbetűvel — város-, ország- és személynevek nem mehetnek.',
     wordPlaceholder: 'soronként egy szó vagy kifejezés…',
