@@ -99,6 +99,13 @@ async function onSelect(id: ModelId) {
       </router-link>
 
       <div class="ml-auto flex items-center gap-2 sm:order-last sm:ml-0">
+        <router-link
+          to="/settings"
+          class="flex min-h-9 items-center rounded-lg border border-border bg-panel-2 px-3 py-2 text-xs font-semibold text-text-dim hover:text-text"
+          :title="t('settings.title')"
+        >
+          ⚙
+        </router-link>
         <label class="flex items-center gap-2 rounded-lg border border-border bg-panel-2 px-3 py-2" :title="t('header.volume')">
           <span aria-hidden="true" class="text-xs">{{ volumePercent() === 0 ? '🔇' : '🔊' }}</span>
           <input

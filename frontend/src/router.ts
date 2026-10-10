@@ -5,6 +5,7 @@ import LoraTrainingPage from './views/ace-step/LoraTrainingPage.vue'
 import Yue2Page from './views/yue2/Yue2Page.vue'
 import ProjectsListPage from './views/editor/ProjectsListPage.vue'
 import EditorPage from './views/editor/EditorPage.vue'
+import SettingsView from './views/SettingsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -15,6 +16,7 @@ const router = createRouter({
     { path: '/yue2', name: 'yue2', component: Yue2Page },
     { path: '/editor', name: 'editor-projects', component: ProjectsListPage },
     { path: '/editor/:id', name: 'editor', component: EditorPage, props: true },
+    { path: '/settings', name: 'settings', component: SettingsView },
   ],
 })
 

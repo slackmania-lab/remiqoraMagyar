@@ -6,10 +6,46 @@
  *   ("elhagyott kikötő, őszi eső").
  * Split because one shared bank repeats itself too fast. Pure frontend,
  * no backend needed - edit and extend freely.
+ *
+ * Users can append their own words in Settings (/settings); those live in
+ * the backend DB and are merged in by loadCustomBanks().
  */
+import { getWordbanks } from '../api/settings'
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
+}
+
+export const PROMPT_CATS = ['moods', 'genres', 'instruments', 'images', 'extras', 'eras'] as const
+export const THEME_CATS = ['places', 'feelings', 'objects', 'times'] as const
+
+let customPrompt: Record<string, string[]> = {}
+let customTheme: Record<string, string[]> = {}
+let loaded = false
+let loading: Promise<void> | null = null
+
+/** Fetch user word banks once (cached); dice falls back to built-ins until loaded. */
+export function loadCustomBanks(): Promise<void> {
+  if (loaded) return Promise.resolve()
+  if (loading) return loading
+  loading = getWordbanks()
+    .then((banks) => {
+      customPrompt = banks.prompt || {}
+      customTheme = banks.theme || {}
+      loaded = true
+    })
+    .catch(() => {
+      loaded = true // offline backend: stick to built-ins
+    })
+    .finally(() => {
+      loading = null
+    })
+  return loading
+}
+
+function withCustom(base: string[], cat: string, custom: Record<string, string[]>): string[] {
+  const extra = (custom[cat] || []).filter((w) => typeof w === 'string' && w.trim())
+  return extra.length > 0 ? [...base, ...extra] : base
 }
 
 // ---------------------------------------------------------------------------
@@ -59,11 +95,11 @@ const P_ERAS = [
 
 /** One random Hungarian song description for the prompt bridge. */
 export function rollPrompt(): string {
-  const mood = pick(P_MOODS)
-  const genre = pick(P_GENRES)
-  const instrument = pick(P_INSTRUMENTS)
-  const image = pick(P_IMAGES)
-  const extra = pick(P_EXTRAS)
+  const mood = pick(withCustom(P_MOODS, 'moods', customPrompt))
+  const genre = pick(withCustom(P_GENRES, 'genres', customPrompt))
+  const instrument = pick(withCustom(P_INSTRUMENTS, 'instruments', customPrompt))
+  const image = pick(withCustom(P_IMAGES, 'images', customPrompt))
+  const extra = pick(withCustom(P_EXTRAS, 'extras', customPrompt))
   const templates = [
     `${mood} ${genre} ${instrument} kísérettel, ${image} hangulatban`,
     `${mood} dal ${image}-ról, ${genre} alapokon`,
@@ -74,7 +110,8 @@ export function rollPrompt(): string {
   ]
   let out = pick(templates)
   if (!out.includes(extra) && Math.random() < 0.5) out += `, ${extra}`
-  if (Math.random() < 0.25) out += `, ${pick(P_ERAS)}`
+  const eras = withCustom(P_ERAS, 'eras', customPrompt)
+  if (Math.random() < 0.25) out += `, ${pick(eras)}`
   return out
 }
 
@@ -112,13 +149,17 @@ const T_TIMES = [
 
 /** One random Hungarian song theme for the lyricist. */
 export function rollTheme(): string {
+  const places = withCustom(T_PLACES, 'places', customTheme)
+  const feelings = withCustom(T_FEELINGS, 'feelings', customTheme)
+  const objects = withCustom(T_OBJECTS, 'objects', customTheme)
+  const times = withCustom(T_TIMES, 'times', customTheme)
   const templates = [
-    `${pick(T_PLACES)}, ${pick(T_TIMES)}`,
-    `${pick(T_PLACES)}, ${pick(T_FEELINGS)}`,
-    `${pick(T_FEELINGS)} ${pick(T_TIMES)}`,
-    `${pick(T_OBJECTS)} és ${pick(T_FEELINGS)}`,
-    `${pick(T_PLACES)} — ${pick(T_OBJECTS)}`,
-    `${pick(T_TIMES)} a ${pick(T_PLACES)} mellett`,
+    `${pick(places)}, ${pick(times)}`,
+    `${pick(places)}, ${pick(feelings)}`,
+    `${pick(feelings)} ${pick(times)}`,
+    `${pick(objects)} és ${pick(feelings)}`,
+    `${pick(places)} — ${pick(objects)}`,
+    `${pick(times)} a ${pick(places)} mellett`,
   ]
   return pick(templates)
 }

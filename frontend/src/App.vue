@@ -6,6 +6,7 @@ import AppFooter from './components/shared/AppFooter.vue'
 import AppHeader from './components/shared/AppHeader.vue'
 import ArtistDialog from './components/shared/ArtistDialog.vue'
 import { useSettingsStore } from './stores/settings'
+import { loadCustomBanks } from './utils/wordbank'
 
 const orchestrator = useOrchestratorStore()
 const settings = useSettingsStore()
@@ -18,6 +19,7 @@ watchEffect(() => {
 onMounted(() => {
   orchestrator.startPolling()
   void settings.load()
+  void loadCustomBanks()
 })
 onBeforeUnmount(() => orchestrator.stopPolling())
 </script>

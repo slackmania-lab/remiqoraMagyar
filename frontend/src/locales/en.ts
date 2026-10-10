@@ -789,7 +789,7 @@ export default {
     downloadTitle: 'Download the selected variant',
     downloadVariant: 'Download variant #{n}',
   },
-  lyricist: {
+    lyricist: {
     title: 'Have lyrics written',    hint: 'Ollama writes them on CPU',
     placeholder: 'Theme in any language, e.g.: elhagyott kikötő, őszi eső…',
     submit: 'Write lyrics',
@@ -799,7 +799,28 @@ export default {
     modelTitle: 'Ollama model for writing',
     verses: 'Verses',
     chorus: '+ chorus',
+    bridge: '+ bridge',
+    outro: '+ outro',
+    mood: 'Mood…',
+    moodTitle: 'Mood hint for the lyrics (e.g. melancholic)',
     dice: 'Roll a random theme',
+  },
+  settings: {
+    title: 'Settings',
+    subtitle: 'Your own words for the dice: they are added to the built-in word banks.',
+    promptBank: 'Prompt word bank',
+    promptHint: 'Extra words for the 🎲 in the prompt bridge, one per line. Added to the built-ins.',
+    themeBank: 'Lyrics theme bank',
+    themeHint: 'Extra words for the 🎲 in the lyricist, one per line. Added to the built-ins.',
+    wordPlaceholder: 'one word or phrase per line…',
+    save: 'Save',
+    saving: 'Saving…',
+    saved: 'Saved at {time}.',
+    cats: {
+      moods: 'Moods', genres: 'Genres', instruments: 'Instruments', images: 'Imagery',
+      extras: 'Extras', eras: 'Eras', places: 'Places', feelings: 'Feelings',
+      objects: 'Objects', times: 'Times',
+    },
   },
   promptBridge: {
     title: 'Prompt in Hungarian / any language',
