@@ -801,6 +801,7 @@ export default {
     modelTitle: 'Модель Ollama для написания',
     verses: 'Куплеты',
     chorus: '+ припев',
+    dice: 'Случайная тема',
   },
   promptBridge: {
     title: 'Промпт на венгерском / любом языке',
@@ -818,6 +819,7 @@ export default {
     submitLocal: 'Перевести',
     srcLangTitle: 'Язык ввода для встроенного переводчика',
     srcLangAuto: 'Авто',
+    dice: 'Случайное описание',
   },
   logs: {
     title: 'Живые логи',

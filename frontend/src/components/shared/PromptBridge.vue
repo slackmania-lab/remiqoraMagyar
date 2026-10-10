@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { preparePrompt, promptStatus } from '../../api/prompt'
 import type { PromptLang, PromptPrepareResult } from '../../api/prompt'
+import { rollPrompt } from '../../utils/wordbank'
 
 const props = defineProps<{ target: string }>()
 const emit = defineEmits<{ apply: [result: PromptPrepareResult] }>()
@@ -52,6 +53,12 @@ function onModelChange() {
 
 function onSrcLangChange() {
   localStorage.setItem('promptBridge_srcLang', srcLang.value)
+}
+
+function rollDice() {
+  input.value = rollPrompt()
+  error.value = ''
+  result.value = null
 }
 
 async function submit() {
@@ -125,6 +132,14 @@ function apply() {
       >
         <option v-for="m in models" :key="m" :value="m">{{ m }}</option>
       </select>
+      <button
+        type="button"
+        class="rounded-lg border border-border px-2.5 py-1.5 text-xs text-text hover:bg-panel"
+        :title="t('promptBridge.dice')"
+        @click="rollDice"
+      >
+        🎲
+      </button>
       <button
         type="button"
         class="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text hover:bg-panel disabled:opacity-50"

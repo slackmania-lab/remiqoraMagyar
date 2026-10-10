@@ -799,6 +799,7 @@ export default {
     modelTitle: 'Ollama model for writing',
     verses: 'Verses',
     chorus: '+ chorus',
+    dice: 'Roll a random theme',
   },
   promptBridge: {
     title: 'Prompt in Hungarian / any language',
@@ -816,6 +817,7 @@ export default {
     submitLocal: 'Translate',
     srcLangTitle: 'Input language for the built-in translator',
     srcLangAuto: 'Auto',
+    dice: 'Roll a random description',
   },
   logs: {
     title: 'Live logs',

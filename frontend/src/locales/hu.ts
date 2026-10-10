@@ -801,6 +801,7 @@ export default {
     modelTitle: 'Ollama-modell az íráshoz',
     verses: 'Versszak',
     chorus: '+ refrén',
+    dice: 'Véletlen téma',
   },
   promptBridge: {
     title: 'Prompt magyarul / bármilyen nyelven',
@@ -818,6 +819,7 @@ export default {
     submitLocal: 'Fordítás',
     srcLangTitle: 'A beviteli nyelv a beépített fordítóhoz',
     srcLangAuto: 'Auto',
+    dice: 'Véletlen leírás',
   },
   logs: {
     title: 'Élő logok',
