@@ -227,6 +227,9 @@ class LyricsIn(BaseModel):
     lang: str = Field(default="en", max_length=8)
     verses: int = Field(default=3, ge=1, le=8)
     chorus: bool = Field(default=True)
+    bridge: bool = Field(default=False)
+    outro: bool = Field(default=False)
+    mood: str = Field(default="", max_length=40)
     model: str = Field(default="", max_length=64)
 
 
@@ -256,7 +259,16 @@ async def prompt_lyrics(body: LyricsIn):
     if lang not in LYRICS_LANGS:
         raise HTTPException(status_code=400, detail=f"Unsupported lyrics language: {body.lang}")
     theme = " ".join(body.theme.split())
-    structure = f"{body.verses} verse(s)" + (", plus a repeating [Chorus] after every second verse" if body.chorus else ", no chorus")
+    parts = [f"{body.verses} verse(s)"]
+    if body.chorus:
+        parts.append("a repeating [Chorus] after every second verse")
+    if body.bridge:
+        parts.append("one [Bridge] with a perspective shift before the last chorus")
+    if body.outro:
+        parts.append("a short closing [Outro]")
+    structure = ", ".join(parts)
+    mood = " ".join(body.mood.split())
+    mood_line = f"\nMood: {mood}" if mood else ""
     try:
         async with httpx.AsyncClient(timeout=420.0) as client:
             names = await _ollama_models(client)
@@ -275,7 +287,7 @@ async def prompt_lyrics(body: LyricsIn):
                         {"role": "system", "content": LYRICS_SYSTEM_PROMPT},
                         {
                             "role": "user",
-                            "content": f"Language: {LYRICS_LANGS[lang]}\nStructure: {structure}\nTheme: {theme}",
+                            "content": f"Language: {LYRICS_LANGS[lang]}\nStructure: {structure}{mood_line}\nTheme: {theme}",
                         },
                     ],
                 },

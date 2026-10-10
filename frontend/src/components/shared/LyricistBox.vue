@@ -11,6 +11,9 @@ const theme = ref('')
 const lang = ref(localStorage.getItem('lyricist_lang') || 'en')
 const verses = ref(3)
 const chorus = ref(true)
+const bridge = ref(false)
+const outro = ref(false)
+const mood = ref('')
 const models = ref<string[]>([])
 const selectedModel = ref(localStorage.getItem('lyricist_model') || '')
 const loading = ref(false)
@@ -59,7 +62,7 @@ async function submit() {
         // submit below will surface the real error
       }
     }
-    const r = await writeLyrics(theme.value.trim(), lang.value, verses.value, chorus.value, selectedModel.value)
+    const r = await writeLyrics(theme.value.trim(), lang.value, verses.value, chorus.value, selectedModel.value, { bridge: bridge.value, outro: outro.value, mood: mood.value.trim() })
     result.value = r.lyrics
     apply()
   } catch (err) {
@@ -103,6 +106,20 @@ function apply() {
         <input v-model="chorus" type="checkbox" class="rounded border-border" />
         {{ t('lyricist.chorus') }}
       </label>
+      <label class="flex items-center gap-1 text-xs text-text-dim">
+        <input v-model="bridge" type="checkbox" class="rounded border-border" />
+        {{ t('lyricist.bridge') }}
+      </label>
+      <label class="flex items-center gap-1 text-xs text-text-dim">
+        <input v-model="outro" type="checkbox" class="rounded border-border" />
+        {{ t('lyricist.outro') }}
+      </label>
+      <input
+        v-model="mood"
+        class="w-28 rounded-lg border border-border bg-panel px-2 py-1.5 text-xs text-text"
+        :placeholder="t('lyricist.mood')"
+        :title="t('lyricist.moodTitle')"
+      />
       <select
         v-if="models.length"
         v-model="selectedModel"
