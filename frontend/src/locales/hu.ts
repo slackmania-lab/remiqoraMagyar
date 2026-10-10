@@ -818,6 +818,7 @@ export default {
     save: 'Mentés',
     saving: 'Mentés…',
     saved: 'Elmentve: {time}.',
+    builtin: 'Beépített',
     cats: {
       moods: 'Hangulatok', genres: 'Műfajok', instruments: 'Hangszerek', images: 'Képek',
       extras: 'Extrák', eras: 'Korszakok', places: 'Helyek', feelings: 'Érzések',

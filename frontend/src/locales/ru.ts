@@ -818,6 +818,7 @@ export default {
     save: 'Сохранить',
     saving: 'Сохранение…',
     saved: 'Сохранено в {time}.',
+    builtin: 'Встроенные',
     cats: {
       moods: 'Настроения', genres: 'Жанры', instruments: 'Инструменты', images: 'Образы',
       extras: 'Дополнительно', eras: 'Эпохи', places: 'Места', feelings: 'Чувства',

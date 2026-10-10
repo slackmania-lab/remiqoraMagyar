@@ -816,6 +816,7 @@ export default {
     save: 'Save',
     saving: 'Saving…',
     saved: 'Saved at {time}.',
+    builtin: 'Built-in',
     cats: {
       moods: 'Moods', genres: 'Genres', instruments: 'Instruments', images: 'Imagery',
       extras: 'Extras', eras: 'Eras', places: 'Places', feelings: 'Feelings',

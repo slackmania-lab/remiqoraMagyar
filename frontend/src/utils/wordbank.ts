@@ -19,6 +19,10 @@ function pick<T>(arr: T[]): T {
 export const PROMPT_CATS = ['moods', 'genres', 'instruments', 'images', 'extras', 'eras'] as const
 export const THEME_CATS = ['places', 'feelings', 'objects', 'times'] as const
 
+/** Built-in banks, exposed read-only for the Settings page display. */
+export const BUILTIN_PROMPT: Record<string, string[]> = {}
+export const BUILTIN_THEME: Record<string, string[]> = {}
+
 let customPrompt: Record<string, string[]> = {}
 let customTheme: Record<string, string[]> = {}
 let loaded = false
@@ -164,3 +168,6 @@ export function rollTheme(): string {
   ]
   return pick(templates)
 }
+
+Object.assign(BUILTIN_PROMPT, { moods: P_MOODS, genres: P_GENRES, instruments: P_INSTRUMENTS, images: P_IMAGES, extras: P_EXTRAS, eras: P_ERAS });
+Object.assign(BUILTIN_THEME, { places: T_PLACES, feelings: T_FEELINGS, objects: T_OBJECTS, times: T_TIMES });

@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getWordbanks, saveWordbanks } from '../api/settings'
 import type { Wordbanks } from '../api/settings'
-import { PROMPT_CATS, THEME_CATS } from '../utils/wordbank'
+import { BUILTIN_PROMPT, BUILTIN_THEME, PROMPT_CATS, THEME_CATS } from '../utils/wordbank'
 
 const { t } = useI18n()
 // One textarea per category, one word/phrase per line. Saved to the backend
@@ -83,6 +83,9 @@ async function save() {
               class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text"
               :placeholder="t('settings.wordPlaceholder')"
             ></textarea>
+            <p class="mt-1 text-[11px] leading-4 text-text-dim">
+              <span class="font-medium">{{ t('settings.builtin') }}:</span> {{ (BUILTIN_PROMPT[cat] || []).join(', ') }}
+            </p>
           </div>
         </div>
       </section>
@@ -98,6 +101,9 @@ async function save() {
               class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text"
               :placeholder="t('settings.wordPlaceholder')"
             ></textarea>
+            <p class="mt-1 text-[11px] leading-4 text-text-dim">
+              <span class="font-medium">{{ t('settings.builtin') }}:</span> {{ (BUILTIN_THEME[cat] || []).join(', ') }}
+            </p>
           </div>
         </div>
       </section>
