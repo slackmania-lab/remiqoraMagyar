@@ -30,6 +30,26 @@ class WordbanksBody(BaseModel):
     theme: dict[str, list[str]] = Field(default_factory=dict)
 
 
+# No proper names in the dice banks: no cities, countries, waters, mountains,
+# peoples or personal names. Hungarian common nouns are lowercase, so any
+# capitalized word is a proper name; well-known lowercase geo/ethnic terms
+# are covered by the denylist.
+_BANNED_NAMES = frozenset(
+    "magyar magyarország budapest duna tisza dráva balaton velencei-tó "
+    "fertő mátra bükk bakony pilis börzsöny zemplén mecsek villány alpok "
+    "tátra kárpátok gellért várhegy hősök margitsziget lánchíd szabadság "
+    "viking vikingek magyarok török arab cigány roma zsidó német orosz angol "
+    "francia olasz spanyol portugál holland lengyel cseh szlovák román szerb "
+    "horvát szlovén ukrán osztrák svájci görög japán kínai indiai egyiptomi "
+    "törökök arabok párizs london berlin moszkva bécs prága varsó amszterdam "
+    "róma madrid lisszabon istanbul kairó".split()
+)
+
+
+def _is_name(word: str) -> bool:
+    return bool(word) and (word[0].isupper() or word.lower() in _BANNED_NAMES)
+
+
 def _clean_bank(raw: dict, allowed: tuple[str, ...]) -> dict[str, list[str]]:
     if not isinstance(raw, dict):
         raise HTTPException(status_code=400, detail="wordbank must be an object")
@@ -42,7 +62,11 @@ def _clean_bank(raw: dict, allowed: tuple[str, ...]) -> dict[str, list[str]]:
             if not isinstance(w, str):
                 continue
             w = " ".join(w.split())[:_MAX_LEN]
-            if w and w.lower() not in (s.lower() for s in seen):
+            parts = w.split()
+            # Drop entries containing any proper/geographic name.
+            if not w or any(_is_name(p.strip(".,;:!?()\"'’") or " ") for p in parts):
+                continue
+            if w.lower() not in (s.lower() for s in seen):
                 seen.append(w)
             if len(seen) >= _MAX_WORDS:
                 break

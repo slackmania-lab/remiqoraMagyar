@@ -90,7 +90,7 @@ const P_EXTRAS = [
 
 const P_ERAS = [
   '80-as évek', 'középkori hangulat', 'futurisztikus', '60-as évek',
-  'mesebeli', '70-es évek', 'barokk', 'vadnyugati', 'viking', 'űrkorszak',
+  'mesebeli', '70-es évek', 'barokk', 'űrkorszak',
 ]
 
 /** One random Hungarian song description for the prompt bridge. */
@@ -121,7 +121,7 @@ export function rollPrompt(): string {
 
 const T_PLACES = [
   'elhagyott kikötő', 'őszi eső', 'éjféli vonat', 'kihűlt kávé', 'üres játszótér',
-  'hajnali metró', 'leégett ház', 'csonka hold', 'vasárnapi piac', 'ködös Dunapart',
+  'hajnali metró', 'leégett ház', 'csonka hold', 'vasárnapi piac', 'ködös folyópart',
   'bezárt mozi', 'rozsdás híd', 'néptelen strand', 'villanypózna fénye',
   'padlásszoba', 'kórházi folyosó', 'éjjeli benzinkút', 'szőlőhegy',
   'panelrengeteg', 'folyóparti pad', 'templomtorony', 'vurstli', 'lomtár',
