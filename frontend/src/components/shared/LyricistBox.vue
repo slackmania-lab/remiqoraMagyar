@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { LYRIC_LANGS, promptStatus, writeLyrics } from '../../api/prompt'
-import { rollPrompt } from '../../utils/wordbank'
+import { rollTheme } from '../../utils/wordbank'
 
 const emit = defineEmits<{ apply: [lyrics: string, lang: string] }>()
 
@@ -116,7 +116,7 @@ function apply() {
         type="button"
         class="rounded-lg border border-border px-2.5 py-1.5 text-xs text-text hover:bg-panel"
         :title="t('lyricist.dice')"
-        @click="theme = rollPrompt(); result = ''; error = ''"
+        @click="theme = rollTheme(); result = ''; error = ''"
       >
         🎲
       </button>

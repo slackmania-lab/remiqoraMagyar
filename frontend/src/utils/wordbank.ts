@@ -1,64 +1,124 @@
-/** Shared Hungarian "prompt parts" word bank for the dice buttons.
+/** Two separate Hungarian word banks for the dice buttons.
  *
- * Pure frontend, no backend needed: rolls a Hungarian description that flows
- * into the prompt bridge (which translates it) or straight into the lyricist
- * as a theme. Edit/extend freely — more words, more surprise.
+ * PROMPT bank -> style descriptions for the prompt bridge
+ *   ("melankolikus folk hegedűvel, köd hangulatban").
+ * THEME bank -> song themes for the lyricist
+ *   ("elhagyott kikötő, őszi eső").
+ * Split because one shared bank repeats itself too fast. Pure frontend,
+ * no backend needed - edit and extend freely.
  */
-
-const MOODS = [
-  'szomorú', 'vidám', 'epikus', 'sötét', 'álmodozó', 'vad', 'nyugodt',
-  'melankolikus', 'ünnepélyes', 'lázadó', 'nosztalgikus', 'sejtelmes',
-  'játékos', 'drámai', 'törékeny', 'büszke',
-]
-
-const GENRES = [
-  'rock', 'techno', 'folk', 'blues', 'metal', 'pop', 'jazz', 'ambient',
-  'punk', 'country', 'reggae', 'szintipop', 'ballada', 'keringő', 'rap',
-]
-
-const INSTRUMENTS = [
-  'gitár', 'zongora', 'hegedű', 'dob', 'harmonika', 'furulya', 'szaxofon',
-  'cselló', 'hárfa', 'trombita', 'bendzsó', 'cimbalom', 'basszusgitár',
-  'szintetizátor', 'tambura',
-]
-
-const IMAGES = [
-  'eső', 'éjszakai város', 'tenger', 'hegyek', 'vonat', 'kikötő', 'sivatag',
-  'erdő', 'folyó', 'csillagos ég', 'köd', 'tábortűz', 'hóesés', 'naplemente',
-  'elhagyott gyár', 'kis kocsma',
-]
-
-const EXTRAS = [
-  'női énekkel', 'férfihangon', 'kórussal', 'lassú tempóban', 'pörgős ritmussal',
-  'akusztikusan', 'elektronikusan', 'élő dobokkal', 'vonósnégyessel',
-]
-
-const ERAS = ['80-as évek', 'középkori hangulat', 'futurisztikus', '60-as évek', 'mesebeli']
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-function maybe<T>(arr: T[], chance: number): T | '' {
-  return Math.random() < chance ? pick(arr) : ''
-}
+// ---------------------------------------------------------------------------
+// PROMPT bank (style descriptions)
+// ---------------------------------------------------------------------------
 
-/** One random Hungarian song description, e.g. "melankolikus folk hegedűvel, köd hangulatban". */
+const P_MOODS = [
+  'szomorú', 'vidám', 'epikus', 'sötét', 'álmodozó', 'vad', 'nyugodt',
+  'melankolikus', 'ünnepélyes', 'lázadó', 'nosztalgikus', 'sejtelmes',
+  'játékos', 'drámai', 'törékeny', 'büszke', 'fájdalmas', 'reményteli',
+  'baljós', 'mámoros', 'higgadt', 'szilaj', 'bensőséges', 'fenyegető',
+  'fénylő', 'keserédes', 'pajkos', 'komor', 'lebegő', 'tüzes',
+]
+
+const P_GENRES = [
+  'rock', 'techno', 'folk', 'blues', 'metal', 'pop', 'jazz', 'ambient',
+  'punk', 'country', 'reggae', 'szintipop', 'ballada', 'keringő', 'rap',
+  'sanzon', 'operett', 'musical', 'gospel', 'soul', 'funk', 'disco',
+  'grunge', 'indie', 'lofi', 'drum and bass', 'hardstyle',
+]
+
+const P_INSTRUMENTS = [
+  'gitár', 'zongora', 'hegedű', 'dob', 'harmonika', 'furulya', 'szaxofon',
+  'cselló', 'hárfa', 'trombita', 'bendzsó', 'cimbalom', 'basszusgitár',
+  'szintetizátor', 'tambura', 'brácsa', 'nagybőgő', 'klarinét', 'oboa',
+  'orgona', 'tangóharmonika', 'szájharmonika', 'ukulele', 'mandolin',
+]
+
+const P_IMAGES = [
+  'eső', 'éjszakai város', 'tenger', 'hegyek', 'vonat', 'kikötő', 'sivatag',
+  'erdő', 'folyó', 'csillagos ég', 'köd', 'tábortűz', 'hóesés', 'naplemente',
+  'elhagyott gyár', 'kis kocsma', 'vihar', 'hajnal', 'alkonyat', 'metró',
+  'tetőterasz', 'kastély', 'piac', 'templom', 'híd', 'sziget',
+]
+
+const P_EXTRAS = [
+  'női énekkel', 'férfihangon', 'kórussal', 'lassú tempóban', 'pörgős ritmussal',
+  'akusztikusan', 'elektronikusan', 'élő dobokkal', 'vonósnégyessel',
+  'suttogós vokállal', 'dübörgő basszussal', 'visszhangos gitárral',
+  'gyerekkórussal', 'torzított hangzással', 'tiszta énekhangon',
+]
+
+const P_ERAS = [
+  '80-as évek', 'középkori hangulat', 'futurisztikus', '60-as évek',
+  'mesebeli', '70-es évek', 'barokk', 'vadnyugati', 'viking', 'űrkorszak',
+]
+
+/** One random Hungarian song description for the prompt bridge. */
 export function rollPrompt(): string {
-  const mood = pick(MOODS)
-  const genre = pick(GENRES)
-  const instrument = pick(INSTRUMENTS)
-  const image = pick(IMAGES)
-  const extra = pick(EXTRAS)
-  const era = maybe(ERAS, 0.25)
+  const mood = pick(P_MOODS)
+  const genre = pick(P_GENRES)
+  const instrument = pick(P_INSTRUMENTS)
+  const image = pick(P_IMAGES)
+  const extra = pick(P_EXTRAS)
   const templates = [
     `${mood} ${genre} ${instrument} kísérettel, ${image} hangulatban`,
     `${mood} dal ${image}-ról, ${genre} alapokon`,
     `${genre} ${extra}, ${mood} hangzással`,
     `${mood} ${genre}, ${instrument} és ${image}`,
+    `${instrument}-szólós ${genre}, ${mood} lélekkel`,
+    `${image} ihlette ${mood} ${genre}`,
   ]
   let out = pick(templates)
-  if (!out.includes(extra) && Math.random() < 0.6) out += `, ${extra}`
-  if (era) out += `, ${era}`
+  if (!out.includes(extra) && Math.random() < 0.5) out += `, ${extra}`
+  if (Math.random() < 0.25) out += `, ${pick(P_ERAS)}`
   return out
+}
+
+// ---------------------------------------------------------------------------
+// THEME bank (lyricist song themes)
+// ---------------------------------------------------------------------------
+
+const T_PLACES = [
+  'elhagyott kikötő', 'őszi eső', 'éjféli vonat', 'kihűlt kávé', 'üres játszótér',
+  'hajnali metró', 'leégett ház', 'csonka hold', 'vasárnapi piac', 'ködös Dunapart',
+  'bezárt mozi', 'rozsdás híd', 'néptelen strand', 'villanypózna fénye',
+  'padlásszoba', 'kórházi folyosó', 'éjjeli benzinkút', 'szőlőhegy',
+  'panelrengeteg', 'folyóparti pad', 'templomtorony', 'vurstli', 'lomtár',
+  'tanyasi udvar', 'alagút', 'kilátó', 'szökőkút', 'vasútállomás',
+]
+
+const T_FEELINGS = [
+  'búcsúzás', 'honvágy', 'féltékenység', 'megbocsátás', 'szabadságvágy',
+  'magány', 'hála', 'düh', 'reménykedés', 'felejtés', 'várakozás',
+  'bűntudat', 'felszabadulás', 'nosztalgia', 'szerelem első látásra',
+  'utolsó tánc', 'hazatérés', 'elbukás', 'újratervezés', 'cinkosság',
+]
+
+const T_OBJECTS = [
+  'törött óra', 'megfakult fénykép', 'elveszett kulcs', 'régi bakelit',
+  'papírhajó', 'kigyulladt levél', 'üres boríték', 'rozsdás bicikli',
+  'kölcsönkapott kabát', 'befejezetlen levél', 'tengerészcsomó',
+  'kinyílt esernyő', 'lejárt vonatjegy', 'recsegő rádió', 'poros padlásláda',
+]
+
+const T_TIMES = [
+  'hajnal előtt', 'éjfél után', 'alkonyatkor', 'hétfő reggel', 'szilveszter éjjelén',
+  'nyárutón', 'tél derekán', 'márciusban', 'egy esős kedden', 'holdtöltekor',
+]
+
+/** One random Hungarian song theme for the lyricist. */
+export function rollTheme(): string {
+  const templates = [
+    `${pick(T_PLACES)}, ${pick(T_TIMES)}`,
+    `${pick(T_PLACES)}, ${pick(T_FEELINGS)}`,
+    `${pick(T_FEELINGS)} ${pick(T_TIMES)}`,
+    `${pick(T_OBJECTS)} és ${pick(T_FEELINGS)}`,
+    `${pick(T_PLACES)} — ${pick(T_OBJECTS)}`,
+    `${pick(T_TIMES)} a ${pick(T_PLACES)} mellett`,
+  ]
+  return pick(templates)
 }
