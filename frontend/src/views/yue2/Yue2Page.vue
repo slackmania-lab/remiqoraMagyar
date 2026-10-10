@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useOrchestratorStore } from '../../stores/orchestrator'
 import { useYue2Store } from '../../stores/yue2'
 import ModelOfflineBanner from '../../components/shared/ModelOfflineBanner.vue'
+import LogDock from '../../components/shared/LogDock.vue'
 import GenerateForm from './GenerateForm.vue'
 import TrackFeed from './TrackFeed.vue'
 
@@ -27,5 +28,6 @@ onBeforeUnmount(() => store.stopBackgroundTasks())
       <GenerateForm v-if="isRunning" />
       <TrackFeed :class="{ 'lg:col-span-2': !isRunning }" />
     </div>
+    <LogDock />
   </div>
 </template>

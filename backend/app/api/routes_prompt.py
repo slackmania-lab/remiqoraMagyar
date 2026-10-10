@@ -160,7 +160,10 @@ async def prompt_prepare(body: PrepareIn):
                 json={
                     "model": model,
                     "stream": False,
-                    "options": {"temperature": 0.5},
+                    # Thinking models (qwen3*) spend the whole budget reasoning
+                    # unless told otherwise — that caused multi-minute hangs.
+                    "think": False,
+                    "options": {"temperature": 0.5, "num_predict": 800},
                     "messages": [
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": f"Target: {body.target}\nInput: {text}"},
@@ -265,7 +268,9 @@ async def prompt_lyrics(body: LyricsIn):
                 json={
                     "model": model,
                     "stream": False,
-                    "options": {"temperature": 0.8},
+                    # See above: thinking off, bounded output.
+                    "think": False,
+                    "options": {"temperature": 0.8, "num_predict": 1500},
                     "messages": [
                         {"role": "system", "content": LYRICS_SYSTEM_PROMPT},
                         {

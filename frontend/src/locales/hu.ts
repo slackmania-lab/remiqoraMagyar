@@ -819,6 +819,13 @@ export default {
     srcLangTitle: 'A beviteli nyelv a beépített fordítóhoz',
     srcLangAuto: 'Auto',
   },
+  logs: {
+    title: 'Élő logok',
+    source: 'Logfájl',
+    noSource: '—',
+    follow: 'Követés',
+    empty: '(üres — indíts el valamit)',
+  },
   storeErrors: {
     noSamplesToLabel: 'Nincs címkézendő minta',
     labelingFailed: 'A címkézés nem sikerült',

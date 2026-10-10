@@ -785,14 +785,12 @@ export default {
     play: 'Play',
   },
   batchAB: {
-    compareLabel: 'A/B compare takes:',
-    variant: 'Variant {n}',
+    compareLabel: 'A/B compare takes:',    variant: 'Variant {n}',
     downloadTitle: 'Download the selected variant',
     downloadVariant: 'Download variant #{n}',
   },
   lyricist: {
-    title: 'Have lyrics written',
-    hint: 'Ollama writes them on CPU',
+    title: 'Have lyrics written',    hint: 'Ollama writes them on CPU',
     placeholder: 'Theme in any language, e.g.: elhagyott kikötő, őszi eső…',
     submit: 'Write lyrics',
     working: 'Writing…',
@@ -817,7 +815,15 @@ export default {
     hintLocal: 'Built-in translator, works offline',
     submitLocal: 'Translate',
     srcLangTitle: 'Input language for the built-in translator',
-    srcLangAuto: 'Auto',  },
+    srcLangAuto: 'Auto',
+  },
+  logs: {
+    title: 'Live logs',
+    source: 'Log file',
+    noSource: '—',
+    follow: 'Follow',
+    empty: '(empty — start something to see output)',
+  },
   storeErrors: {
     noSamplesToLabel: 'No samples to label',
     labelingFailed: 'Labeling failed',

@@ -819,6 +819,13 @@ export default {
     srcLangTitle: 'Язык ввода для встроенного переводчика',
     srcLangAuto: 'Авто',
   },
+  logs: {
+    title: 'Живые логи',
+    source: 'Файл лога',
+    noSource: '—',
+    follow: 'Следить',
+    empty: '(пусто — запустите что-нибудь)',
+  },
   storeErrors: {
     noSamplesToLabel: 'Нет сэмплов для разметки',
     labelingFailed: 'Разметка завершилась с ошибкой',

@@ -34,3 +34,27 @@ export function switchModel(model: ModelId): Promise<OrchestratorStatus> {
 export function stopActive(): Promise<OrchestratorStatus> {
   return apiJson<OrchestratorStatus>('/api/orchestrator/stop', {})
 }
+
+export interface LogFile {
+  name: string
+  size: number
+  mtime: number
+}
+
+export interface LogTail {
+  name: string
+  size: number
+  next_offset: number
+  truncated: boolean
+  lines: string[]
+}
+
+export async function listLogs(): Promise<LogFile[]> {
+  const json = await apiFetch<{ logs: LogFile[] }>('/api/orchestrator/logs')
+  return json.logs
+}
+
+export async function readLog(name: string, offset = 0, limit = 200): Promise<LogTail> {
+  const qs = `offset=${offset}&limit=${limit}`
+  return apiFetch<LogTail>(`/api/orchestrator/logs/${encodeURIComponent(name)}?${qs}`)
+}

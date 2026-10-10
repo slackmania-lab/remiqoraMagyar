@@ -5,6 +5,7 @@ import { useOrchestratorStore } from '../../stores/orchestrator'
 import { useAceStepStore } from '../../stores/aceStep'
 import * as trainingApi from '../../api/aceStepTraining'
 import ModelOfflineBanner from '../../components/shared/ModelOfflineBanner.vue'
+import LogDock from '../../components/shared/LogDock.vue'
 import GenerateForm from './GenerateForm.vue'
 import ResultsFeed from './ResultsFeed.vue'
 
@@ -65,5 +66,6 @@ onUnmounted(() => {
       <GenerateForm v-if="isRunning && !isTraining" />
       <ResultsFeed :class="{ 'lg:col-span-2': !isRunning || isTraining }" />
     </div>
+    <LogDock />
   </div>
 </template>
