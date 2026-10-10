@@ -60,6 +60,16 @@ async function submit() {
   if (!input.value.trim()) return
   loading.value = true
   try {
+    // Same staleness guard as LyricistBox: Ollama may have started since mount.
+    if (!useLocal.value && !models.value.length) {
+      try {
+        const st = await promptStatus()
+        models.value = st.models || []
+        selectedModel.value = pickDefaultModel(models.value, st.model)
+      } catch {
+        // submit below will surface the real error
+      }
+    }
     result.value = await preparePrompt(input.value.trim(), props.target, selectedModel.value, srcLang.value)
     // Auto-insert so a Hungarian description flows straight into the form;
     // everything stays editable/reviewable in the form fields.

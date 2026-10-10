@@ -45,6 +45,19 @@ async function submit() {
   if (!theme.value.trim()) return
   loading.value = true
   try {
+    // The model list is fetched on mount, but Ollama may have been started
+    // since (e.g. from the LogDock) — refresh once so the dropdown is alive.
+    if (!models.value.length) {
+      try {
+        const st = await promptStatus()
+        models.value = st.models || []
+        if (!selectedModel.value || !models.value.includes(selectedModel.value)) {
+          selectedModel.value = LYRIC_DEFAULTS.find((m) => models.value.includes(m)) || st.model || ''
+        }
+      } catch {
+        // submit below will surface the real error
+      }
+    }
     const r = await writeLyrics(theme.value.trim(), lang.value, verses.value, chorus.value, selectedModel.value)
     result.value = r.lyrics
     apply()
