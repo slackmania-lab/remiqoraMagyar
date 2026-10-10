@@ -15,8 +15,14 @@ const saving = ref(false)
 const error = ref('')
 const savedAt = ref('')
 
-function toText(banks: Wordbanks, key: 'prompt' | 'theme', cat: string): string {
-  return ((banks[key] || {})[cat] || []).join('\n')
+function merged(cat: string, builtins: Record<string, string[]>, custom: Record<string, string[]>): string[] {
+  const seen: string[] = []
+  const all: unknown[] = [...(builtins[cat] || []), ...((custom[cat] || []) as string[])]
+  for (const w of all) {
+    if (typeof w !== 'string' || !w.trim()) continue
+    if (!seen.some((s) => s.toLowerCase() === (w as string).trim().toLowerCase())) seen.push((w as string).trim())
+  }
+  return seen
 }
 
 function fromText(raw: string): string[] {
@@ -30,8 +36,10 @@ function fromText(raw: string): string[] {
 onMounted(async () => {
   try {
     const banks = await getWordbanks()
-    for (const cat of PROMPT_CATS) promptText.value[cat] = toText(banks, 'prompt', cat)
-    for (const cat of THEME_CATS) themeText.value[cat] = toText(banks, 'theme', cat)
+    // The textareas hold the FULL effective list (built-ins + customs), so
+    // anything can be deleted, fixed or rewritten; saving stores it as custom.
+    for (const cat of PROMPT_CATS) promptText.value[cat] = merged(cat, BUILTIN_PROMPT, banks.prompt || {}).join('\n')
+    for (const cat of THEME_CATS) themeText.value[cat] = merged(cat, BUILTIN_THEME, banks.theme || {}).join('\n')
   } catch (err) {
     error.value = err instanceof Error ? err.message : String(err)
   } finally {
@@ -39,8 +47,29 @@ onMounted(async () => {
   }
 })
 
-async function save() {
+async function resetSection(key: 'prompt' | 'theme') {
+  if (!window.confirm(t('settings.resetConfirm'))) return
   error.value = ''
+  saving.value = true
+  try {
+    const banks = await getWordbanks()
+    if (key === 'prompt') {
+      banks.prompt = {}
+      for (const cat of PROMPT_CATS) promptText.value[cat] = (BUILTIN_PROMPT[cat] || []).join('\n')
+    } else {
+      banks.theme = {}
+      for (const cat of THEME_CATS) themeText.value[cat] = (BUILTIN_THEME[cat] || []).join('\n')
+    }
+    await saveWordbanks(banks)
+    savedAt.value = new Date().toLocaleTimeString()
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : String(err)
+  } finally {
+    saving.value = false
+  }
+}
+
+async function save() {  error.value = ''
   savedAt.value = ''
   saving.value = true
   try {
@@ -72,38 +101,52 @@ async function save() {
     <p v-if="loading" class="text-sm text-text-dim">{{ t('common.loading') }}</p>
     <template v-else>
       <section class="space-y-3">
-        <h2 class="text-lg font-semibold text-text">{{ t('settings.promptBank') }}</h2>
+        <div class="flex items-center gap-3">
+          <h2 class="text-lg font-semibold text-text">{{ t('settings.promptBank') }}</h2>
+          <button
+            type="button"
+            class="rounded-lg border border-border px-2 py-1 text-xs text-text-dim hover:bg-panel-2 hover:text-text"
+            :title="t('settings.resetHint')"
+            @click="resetSection('prompt')"
+          >
+            {{ t('settings.reset') }}
+          </button>
+        </div>
         <p class="text-sm text-text-dim">{{ t('settings.promptHint') }}</p>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div v-for="cat in PROMPT_CATS" :key="cat">
             <label class="mb-1 block text-[13px] font-medium text-text">{{ t(`settings.cats.${cat}`) }}</label>
             <textarea
               v-model="promptText[cat]"
-              rows="4"
+              rows="6"
               class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text"
               :placeholder="t('settings.wordPlaceholder')"
             ></textarea>
-            <p class="mt-1 text-[11px] leading-4 text-text-dim">
-              <span class="font-medium">{{ t('settings.builtin') }}:</span> {{ (BUILTIN_PROMPT[cat] || []).join(', ') }}
-            </p>
           </div>
         </div>
       </section>
       <section class="space-y-3">
-        <h2 class="text-lg font-semibold text-text">{{ t('settings.themeBank') }}</h2>
+        <div class="flex items-center gap-3">
+          <h2 class="text-lg font-semibold text-text">{{ t('settings.themeBank') }}</h2>
+          <button
+            type="button"
+            class="rounded-lg border border-border px-2 py-1 text-xs text-text-dim hover:bg-panel-2 hover:text-text"
+            :title="t('settings.resetHint')"
+            @click="resetSection('theme')"
+          >
+            {{ t('settings.reset') }}
+          </button>
+        </div>
         <p class="text-sm text-text-dim">{{ t('settings.themeHint') }}</p>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div v-for="cat in THEME_CATS" :key="cat">
             <label class="mb-1 block text-[13px] font-medium text-text">{{ t(`settings.cats.${cat}`) }}</label>
             <textarea
               v-model="themeText[cat]"
-              rows="4"
+              rows="6"
               class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text"
               :placeholder="t('settings.wordPlaceholder')"
             ></textarea>
-            <p class="mt-1 text-[11px] leading-4 text-text-dim">
-              <span class="font-medium">{{ t('settings.builtin') }}:</span> {{ (BUILTIN_THEME[cat] || []).join(', ') }}
-            </p>
           </div>
         </div>
       </section>
