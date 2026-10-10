@@ -825,6 +825,10 @@ export default {
     noSource: '—',
     follow: 'Követés',
     empty: '(üres — indíts el valamit)',
+    ollamaHint: 'Backend által menedzselt CPU-s Ollama indítása/leállítása (a log ide jön)',
+    ollamaManaged: 'Ollama: menedzselt (CPU)',
+    ollamaExternal: 'Ollama: külső (tálcaikon?)',
+    ollamaOff: 'Ollama: kikapcsolva',
   },
   storeErrors: {
     noSamplesToLabel: 'Nincs címkézendő minta',

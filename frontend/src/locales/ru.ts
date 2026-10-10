@@ -825,6 +825,10 @@ export default {
     noSource: '—',
     follow: 'Следить',
     empty: '(пусто — запустите что-нибудь)',
+    ollamaHint: 'Запустить/остановить Ollama под управлением backend (только CPU, лог здесь)',
+    ollamaManaged: 'Ollama: внутренняя (CPU)',
+    ollamaExternal: 'Ollama: внешняя (tray?)',
+    ollamaOff: 'Ollama: выкл',
   },
   storeErrors: {
     noSamplesToLabel: 'Нет сэмплов для разметки',

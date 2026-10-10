@@ -823,6 +823,10 @@ export default {
     noSource: '—',
     follow: 'Follow',
     empty: '(empty — start something to see output)',
+    ollamaHint: 'Start/stop the backend-managed CPU-only Ollama (frees the GPU, logs here)',
+    ollamaManaged: 'Ollama: managed (CPU)',
+    ollamaExternal: 'Ollama: external (tray app?)',
+    ollamaOff: 'Ollama: off',
   },
   storeErrors: {
     noSamplesToLabel: 'No samples to label',
