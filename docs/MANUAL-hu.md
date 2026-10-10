@@ -202,10 +202,25 @@ az SDXL-t is lehúzza egyszer; `-SkipWeights`/`--skip-weights` kihagyja).
 - **Logok:** `backend/logs/` (motoronként), böngésző-hibákhoz `F12` → Console.
 
 ## 13. Frissítés GitHubról
-
 - Fork: [`slackmania-lab/remiqoraMagyar`](https://github.com/slackmania-lab/remiqoraMagyar).
 - Eredeti: [`inikolax/remiqora`](https://github.com/inikolax/remiqora) —
   függőben lévő upstream PR: [#38](https://github.com/inikolax/remiqora/pull/38)
   (prompt-híd + NLLB + CUDA-szegezés).
 - Saját példareceptek: `recipes/` mappa — új kedvencből egy paranccsal
   gyártható (az adatbázis soraiból), mehet melléjük README-sor.
+
+## 14. Telepítőcsomag (Install Pack)
+
+A `desktop/` mappából `npm run dist` paranccsal készül Windows-telepítő
+(`Remiqora-Setup-<verzió>.exe`, aláíratlan — SmartScreennél „További info" →
+„Futtatás mindenképp"). A telepítő kicsi (~100 MB): az első indítás tölti le
+a motorokat és súlyokat a választott mappába (30 GB nagyságrend!):
+
+- YuE2/ACE-Step/Demucs motorok + GGUF-súlyok (mint az eredetiben),
+- **plusz ebben a kiadásban:** NLLB fordító (~2,4 GB) és SDXL borítómodell
+  (~7 GB) — a backend `requirements.txt`-ből a CPU-s `torch` is automatikusan
+  jön, külön teendő nincs.
+
+Amit a telepítő NEM tartalmaz: Ollama (a dalszöveg-íróhoz és az LLM-es
+cizelláláshoz külön telepítendő, CPU-módban), valamint az ACE-Step
+saját checkpointjai (első generáláskor jönnek le maguktól).

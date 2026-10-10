@@ -4,7 +4,7 @@
   "requirements": {
     "minDriver": 580,
     "minComputeCapability": 7.5,
-    "minFreeBytes": 50000000000
+    "minFreeBytes": 60000000000
   },
   "uv": {
     "version": "0.12.17",
@@ -90,6 +90,22 @@
     "url": "https://github.com/ace-step/ACE-Step-1.5/archive/ca1e85fe9430179831e6bc6be790c332190a3866.tar.gz",
     "approxBytes": 8500000000
   },
+  "localModels": [
+    {
+      "id": "nllb",
+      "repo": "facebook/nllb-200-distilled-600M",
+      "subdir": "nllb",
+      "approxBytes": 2500000000,
+      "exclude": ["*.msgpack", "*.h5", "*.ot", "*.onnx"]
+    },
+    {
+      "id": "sdxl-turbo",
+      "repo": "stabilityai/sdxl-turbo",
+      "subdir": "sdxl-turbo",
+      "approxBytes": 7000000000,
+      "exclude": ["*.msgpack", "*.h5", "*.ot", "*.onnx", "*fp8*"]
+    }
+  ],
   "demucs": {
     "approxBytes": 4500000000,
     "model": "htdemucs"

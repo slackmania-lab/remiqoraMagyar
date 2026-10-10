@@ -199,8 +199,41 @@ function buildComponents({ L, manifest, platform, resources }) {
     },
   };
 
-  const aceStep = {
-    id: 'ace-step',
+  // Offline helpers bundled with this edition: the NLLB translator and the
+  // SDXL cover renderer. Both run on CPU inside the backend, need no GPU,
+  // and land under the backend data dir (gitignored, per-user).
+  const localModels = {
+    id: 'local-models',
+    weight: sum((manifest.localModels || []).map((m) => m.approxBytes || 0)),
+    version: `localmodels-${sha1(JSON.stringify(manifest.localModels || []))}`,
+    verify: async () => {
+      for (const m of manifest.localModels || []) {
+        if (!(await exists(path.join(L.data, m.subdir, 'model_index.json')))) return false;
+      }
+      return true;
+    },
+    async install(ctx, report) {
+      const total = sum((manifest.localModels || []).map((m) => m.approxBytes || 0));
+      // huggingface_hub downloads into the HF cache first; its growth is the progress signal.
+      const timer = setInterval(async () => report({ done: Math.min(await dirSize(L.hfHome), total), total }), 1500);
+      try {
+        for (const m of manifest.localModels || []) {
+          report({ note: `${m.id} (${m.repo})` });
+          const script = [
+            'from huggingface_hub import snapshot_download',
+            `snapshot_download(repo_id=${JSON.stringify(m.repo)},`,
+            `  local_dir=${JSON.stringify(path.join(L.data, m.subdir))},`,
+            `  ignore_patterns=${JSON.stringify(m.exclude || [])})`,
+          ].join('\n');
+          await runCommand(L.backendPython, ['-c', script], { env: uvEnv(L), onLine: (line) => report({ note: line }), signal: ctx.signal, logFile });
+        }
+      } finally {
+        clearInterval(timer);
+      }
+    },
+  };
+
+  const aceStep = {    id: 'ace-step',
     weight: manifest.aceStep.approxBytes,
     version: manifest.aceStep.commit.slice(0, 7),
     verify: async () => (await exists(path.join(L.aceStep, '.remiqora-patched'))) && (await exists(path.join(L.aceStep, '.venv'))),
@@ -279,7 +312,7 @@ function buildComponents({ L, manifest, platform, resources }) {
   };
 
   // Order matters: the backend venv provides the Python that runs the weights downloader.
-  return [uv, ffmpeg, engineStep, backendEnv, aceStep, aceModels, demucs, weights];
+  return [uv, ffmpeg, engineStep, backendEnv, localModels, aceStep, aceModels, demucs, weights];
 }
 
 /** Path of ffmpeg: a pinned build under tools/ffmpeg where there is one, otherwise whatever the system has. */
