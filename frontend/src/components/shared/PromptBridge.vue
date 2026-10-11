@@ -155,14 +155,6 @@ watch(formResetToken, () => {
       >
         {{ loading ? t('promptBridge.working') : (useLocal ? t('promptBridge.submitLocal') : t('promptBridge.submit')) }}
       </button>
-      <button
-        v-if="result"
-        type="button"
-        class="accent-gradient rounded-lg px-3 py-1.5 text-xs font-medium text-white"
-        @click="apply"
-      >
-        {{ t('promptBridge.apply') }}
-      </button>
     </div>
     <p v-if="backendStatus" class="text-[11px] text-text-dim">{{ backendStatus }}</p>
     <p v-if="error" class="rounded-lg bg-status-failed/10 p-2 text-xs text-status-failed">{{ error }}</p>

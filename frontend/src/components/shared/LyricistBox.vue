@@ -156,16 +156,7 @@ watch(formResetToken, () => {
       >
         {{ loading ? t('lyricist.working') : t('lyricist.submit') }}
       </button>
-      <button
-        v-if="result"
-        type="button"
-        class="accent-gradient rounded-lg px-3 py-1.5 text-xs font-medium text-white"
-        @click="apply"
-      >
-        {{ t('lyricist.apply') }}
-      </button>
     </div>
     <p v-if="error" class="rounded-lg bg-status-failed/10 p-2 text-xs text-status-failed">{{ error }}</p>
-    <div v-if="result" class="whitespace-pre-wrap rounded-lg bg-panel p-2 font-mono text-xs text-text">{{ result }}</div>
   </div>
 </template>
