@@ -351,6 +351,7 @@ export default {
       full: 'full: before generating audio, the model builds a symbolic plan (ABC score) of melody and chords — higher quality, slightly slower.',
     },
     abcScore: 'ABC score',
+    abcEmptyHint: 'Generate once (or extract) to get a plan here, then extend it ×2/×3.',
     abcPlanLength: 'Plan length: ~{n}s',
     abcExtendHint: 'Repeat the whole plan body (all voices stay in sync) to aim for a longer track',
     abcExtendFailed: 'Could not find repeatable voice blocks in this ABC text.',

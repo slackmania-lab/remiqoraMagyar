@@ -351,6 +351,7 @@ export default {
       full: 'full: a hanggenerálás előtt a modell szimbolikus tervet (ABC-kottát) épít dallamból és akkordokból – jobb minőség, kicsit lassabb.',
     },
     abcScore: 'ABC-kotta',
+    abcEmptyHint: 'Generálj egyet (vagy nyerj ki), hogy legyen terv, aztán hosszabbíts ×2/×3-mal.',
     abcPlanLength: 'Terv hossza: ~{n} mp',
     abcExtendHint: 'A teljes tervtest ismétlése (a szólamok szinkronban maradnak) hosszabb számhoz',
     abcExtendFailed: 'Nem találhatók ismételhető szólamblokkok ebben az ABC-szövegben.',

@@ -533,10 +533,13 @@ async function onRecipeFile(e: Event) {
         <div>
           <label class="text-[13px] font-medium text-text">{{ t('yueGen.abcScore') }}</label>
           <textarea v-model="abc" rows="6" class="w-full rounded-lg border border-border bg-panel-2 p-2.5 font-mono text-xs text-text"></textarea>
-          <div v-if="abc.trim()" class="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-dim">
-            <span v-if="abcPlanSeconds > 0">{{ t('yueGen.abcPlanLength', { n: abcPlanSeconds }) }}</span>
-            <button type="button" class="rounded border border-border px-2 py-0.5 hover:bg-panel-2 hover:text-text" :title="t('yueGen.abcExtendHint')" @click="extendPlan(2)">×2</button>
-            <button type="button" class="rounded border border-border px-2 py-0.5 hover:bg-panel-2 hover:text-text" :title="t('yueGen.abcExtendHint')" @click="extendPlan(3)">×3</button>
+          <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-dim">
+            <template v-if="abc.trim()">
+              <span v-if="abcPlanSeconds > 0">{{ t('yueGen.abcPlanLength', { n: abcPlanSeconds }) }}</span>
+              <button type="button" class="rounded border border-border px-2 py-0.5 hover:bg-panel-2 hover:text-text" :title="t('yueGen.abcExtendHint')" @click="extendPlan(2)">×2</button>
+              <button type="button" class="rounded border border-border px-2 py-0.5 hover:bg-panel-2 hover:text-text" :title="t('yueGen.abcExtendHint')" @click="extendPlan(3)">×3</button>
+            </template>
+            <span v-else>{{ t('yueGen.abcEmptyHint') }}</span>
           </div>
         </div>
         <div class="space-y-2 rounded-lg border border-border bg-panel p-3">
