@@ -11,6 +11,7 @@ import HelpIconButton from '../../components/shared/HelpIconButton.vue'
 import PromptBridge from '../../components/shared/PromptBridge.vue'
 import LyricistBox from '../../components/shared/LyricistBox.vue'
 import TagInput from '../../components/shared/TagInput.vue'
+import { estimateAbcSeconds, extendAbc } from '../../utils/abcExtend'
 import { fireFormReset } from '../../utils/formReset'
 import { downloadRecipe, readRecipeFile } from '../../utils/recipe'
 import type { Recipe } from '../../utils/recipe'
@@ -238,6 +239,14 @@ function resetForm() {
 function onBridgeNumbers(nums: { cfg: number; temp: number }) {
   cfgScale.value = nums.cfg
   semantic.temperature = nums.temp
+}
+
+const abcPlanSeconds = computed(() => estimateAbcSeconds(abc.value))
+
+function extendPlan(times: number) {
+  const extended = extendAbc(abc.value, times)
+  if (extended != null) abc.value = extended
+  else formError.value = t('yueGen.abcExtendFailed')
 }
 
 function onPromptApply(r: { style_en: string; lyrics: string; simple: string }) {  if (r.style_en) style.value = r.style_en
@@ -524,6 +533,11 @@ async function onRecipeFile(e: Event) {
         <div>
           <label class="text-[13px] font-medium text-text">{{ t('yueGen.abcScore') }}</label>
           <textarea v-model="abc" rows="6" class="w-full rounded-lg border border-border bg-panel-2 p-2.5 font-mono text-xs text-text"></textarea>
+          <div v-if="abc.trim()" class="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-dim">
+            <span v-if="abcPlanSeconds > 0">{{ t('yueGen.abcPlanLength', { n: abcPlanSeconds }) }}</span>
+            <button type="button" class="rounded border border-border px-2 py-0.5 hover:bg-panel-2 hover:text-text" :title="t('yueGen.abcExtendHint')" @click="extendPlan(2)">×2</button>
+            <button type="button" class="rounded border border-border px-2 py-0.5 hover:bg-panel-2 hover:text-text" :title="t('yueGen.abcExtendHint')" @click="extendPlan(3)">×3</button>
+          </div>
         </div>
         <div class="space-y-2 rounded-lg border border-border bg-panel p-3">
           <p class="text-xs font-medium text-text">{{ t('yueGen.extractSectionTitle') }}</p>
