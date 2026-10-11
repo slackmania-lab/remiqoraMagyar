@@ -825,7 +825,8 @@ export default {
     builtin: 'Beépített',
     cats: {
       moods: 'Hangulatok', genres: 'Műfajok', instruments: 'Hangszerek', images: 'Képek',
-      extras: 'Extrák', eras: 'Korszakok', places: 'Helyek', feelings: 'Érzések',
+      extras: 'Extrák', eras: 'Korszakok', tempo: 'Tempó', vocals: 'Vokál',
+      production: 'Produkció', places: 'Helyek', feelings: 'Érzések',
       objects: 'Tárgyak', times: 'Időpontok',
     },
   },

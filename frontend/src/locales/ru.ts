@@ -825,7 +825,8 @@ export default {
     builtin: 'Встроенные',
     cats: {
       moods: 'Настроения', genres: 'Жанры', instruments: 'Инструменты', images: 'Образы',
-      extras: 'Дополнительно', eras: 'Эпохи', places: 'Места', feelings: 'Чувства',
+      extras: 'Дополнительно', eras: 'Эпохи', tempo: 'Темп', vocals: 'Вокал',
+      production: 'Продакшн', places: 'Места', feelings: 'Чувства',
       objects: 'Предметы', times: 'Время',
     },
   },

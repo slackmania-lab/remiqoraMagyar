@@ -16,7 +16,7 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-export const PROMPT_CATS = ['moods', 'genres', 'instruments', 'images', 'extras', 'eras'] as const
+export const PROMPT_CATS = ['moods', 'genres', 'instruments', 'images', 'extras', 'eras', 'tempo', 'vocals', 'production'] as const
 export const THEME_CATS = ['places', 'feelings', 'objects', 'times'] as const
 
 /** Built-in banks, exposed read-only for the Settings page display. */
@@ -87,10 +87,8 @@ const P_IMAGES = [
 ]
 
 const P_EXTRAS = [
-  'női énekkel', 'férfihangon', 'kórussal', 'lassú tempóban', 'pörgős ritmussal',
   'akusztikusan', 'elektronikusan', 'élő dobokkal', 'vonósnégyessel',
-  'suttogós vokállal', 'dübörgő basszussal', 'visszhangos gitárral',
-  'gyerekkórussal', 'torzított hangzással', 'tiszta énekhangon',
+  'visszhangos gitárral', 'dübörgő basszussal',
 ]
 
 const P_ERAS = [
@@ -98,27 +96,55 @@ const P_ERAS = [
   'mesebeli', '70-es évek', 'barokk', 'vadnyugati', 'viking', 'űrkorszak',
 ]
 
-/** One random Hungarian song description for the prompt bridge.
- * Fixed structure: mood + genre, images + extras, era — plus instruments
- * about half the time. */
-export function rollPrompt(): string {
-  const mood = pick(withCustom(P_MOODS, 'moods', customPrompt))
-  const genre = pick(withCustom(P_GENRES, 'genres', customPrompt))
-  const image = pick(withCustom(P_IMAGES, 'images', customPrompt))
-  const extra = pick(withCustom(P_EXTRAS, 'extras', customPrompt))
-  const era = pick(withCustom(P_ERAS, 'eras', customPrompt))
-  let out = `${mood} ${genre} ${extra}, ${image} hangulatban, ${era}`
-  if (Math.random() < 0.5) {
-    const instruments = withCustom(P_INSTRUMENTS, 'instruments', customPrompt)
-    const first = pick(instruments)
-    let inst = first
-    if (Math.random() < 0.3) {
-      const second = pick(instruments)
-      if (second !== first) inst += `, ${second}`
-    }
-    out += `, ${inst} kísérettel`
+const P_TEMPO = [
+  'lassú tempóban', 'pörgős ritmussal', 'közepes tempóban',
+  'szaggatott ritmussal', 'andalgósan', 'száguldva', 'lüktetve',
+]
+
+const P_VOCALS = [
+  'női énekkel', 'férfihangon', 'kórussal', 'suttogós vokállal',
+  'gyerekkórussal', 'tiszta énekhangon', 'torz vokállal', 'ének nélkül',
+]
+
+const P_PROD = [
+  'nyers hangzással', 'csiszolt produkció', 'lofi', 'visszhangosan',
+  'telt hangzással', 'minimalistán', 'garázszenekarosan', 'stúdiótisztán',
+]
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
   }
-  return out
+  return a
+}
+
+/** One random Hungarian tag list for the prompt bridge: exactly ONE genre,
+ *  1-2 moods, then 2-4 more slots from the rest (never a second genre). */
+export function rollPrompt(): string {
+  const genre = pick(withCustom(P_GENRES, 'genres', customPrompt))
+  const moods = shuffle(withCustom(P_MOODS, 'moods', customPrompt))
+  const tags = [genre, moods[0]]
+  if (moods.length > 1 && Math.random() < 0.5) tags.push(moods[1])
+  const fillers: Array<() => string | null> = [
+    () => `${pick(withCustom(P_INSTRUMENTS, 'instruments', customPrompt))} kísérettel`,
+    () => pick(withCustom(P_VOCALS, 'vocals', customPrompt)),
+    () => pick(withCustom(P_TEMPO, 'tempo', customPrompt)),
+    () => `${pick(withCustom(P_IMAGES, 'images', customPrompt))} hangulatban`,
+    () => pick(withCustom(P_PROD, 'production', customPrompt)),
+    () => (Math.random() < 0.35 ? pick(withCustom(P_EXTRAS, 'extras', customPrompt)) : null),
+  ]
+  const extraCount = 2 + Math.floor(Math.random() * 3)
+  for (const make of shuffle(fillers).slice(0, extraCount)) {
+    const tag = make()
+    if (tag && !tags.includes(tag)) tags.push(tag)
+  }
+  if (Math.random() < 0.4) {
+    const era = pick(withCustom(P_ERAS, 'eras', customPrompt))
+    if (!tags.includes(era)) tags.push(era)
+  }
+  return tags.join(', ')
 }
 
 // ---------------------------------------------------------------------------
@@ -166,5 +192,5 @@ export function rollTheme(): string {
   return out
 }
 
-Object.assign(BUILTIN_PROMPT, { moods: P_MOODS, genres: P_GENRES, instruments: P_INSTRUMENTS, images: P_IMAGES, extras: P_EXTRAS, eras: P_ERAS });
+Object.assign(BUILTIN_PROMPT, { moods: P_MOODS, genres: P_GENRES, instruments: P_INSTRUMENTS, images: P_IMAGES, extras: P_EXTRAS, eras: P_ERAS, tempo: P_TEMPO, vocals: P_VOCALS, production: P_PROD });
 Object.assign(BUILTIN_THEME, { places: T_PLACES, feelings: T_FEELINGS, objects: T_OBJECTS, times: T_TIMES });

@@ -15,7 +15,7 @@ ARTIST_KEY = "artist"
 WORDBANK_KEY = "wordbanks"
 
 # Must stay in sync with frontend/src/utils/wordbank.ts categories.
-PROMPT_CATS = ("moods", "genres", "instruments", "images", "extras", "eras")
+PROMPT_CATS = ("moods", "genres", "instruments", "images", "extras", "eras", "tempo", "vocals", "production")
 THEME_CATS = ("places", "feelings", "objects", "times")
 _MAX_WORDS = 200
 _MAX_LEN = 80

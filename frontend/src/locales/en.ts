@@ -823,7 +823,8 @@ export default {
     builtin: 'Built-in',
     cats: {
       moods: 'Moods', genres: 'Genres', instruments: 'Instruments', images: 'Imagery',
-      extras: 'Extras', eras: 'Eras', places: 'Places', feelings: 'Feelings',
+      extras: 'Extras', eras: 'Eras', tempo: 'Tempo', vocals: 'Vocals',
+      production: 'Production', places: 'Places', feelings: 'Feelings',
       objects: 'Objects', times: 'Times',
     },
   },
