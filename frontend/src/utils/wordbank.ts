@@ -98,25 +98,26 @@ const P_ERAS = [
   'mesebeli', '70-es évek', 'barokk', 'vadnyugati', 'viking', 'űrkorszak',
 ]
 
-/** One random Hungarian song description for the prompt bridge. */
+/** One random Hungarian song description for the prompt bridge.
+ * Fixed structure: mood + genre, images + extras, era — plus instruments
+ * about half the time. */
 export function rollPrompt(): string {
   const mood = pick(withCustom(P_MOODS, 'moods', customPrompt))
   const genre = pick(withCustom(P_GENRES, 'genres', customPrompt))
-  const instrument = pick(withCustom(P_INSTRUMENTS, 'instruments', customPrompt))
   const image = pick(withCustom(P_IMAGES, 'images', customPrompt))
   const extra = pick(withCustom(P_EXTRAS, 'extras', customPrompt))
-  const templates = [
-    `${mood} ${genre} ${instrument} kísérettel, ${image} hangulatban`,
-    `${mood} dal ${image}-ról, ${genre} alapokon`,
-    `${genre} ${extra}, ${mood} hangzással`,
-    `${mood} ${genre}, ${instrument} és ${image}`,
-    `${instrument}-szólós ${genre}, ${mood} lélekkel`,
-    `${image} ihlette ${mood} ${genre}`,
-  ]
-  let out = pick(templates)
-  if (!out.includes(extra) && Math.random() < 0.5) out += `, ${extra}`
-  const eras = withCustom(P_ERAS, 'eras', customPrompt)
-  if (Math.random() < 0.25) out += `, ${pick(eras)}`
+  const era = pick(withCustom(P_ERAS, 'eras', customPrompt))
+  let out = `${mood} ${genre} ${extra}, ${image} hangulatban, ${era}`
+  if (Math.random() < 0.5) {
+    const instruments = withCustom(P_INSTRUMENTS, 'instruments', customPrompt)
+    const first = pick(instruments)
+    let inst = first
+    if (Math.random() < 0.3) {
+      const second = pick(instruments)
+      if (second !== first) inst += `, ${second}`
+    }
+    out += `, ${inst} kísérettel`
+  }
   return out
 }
 
@@ -152,21 +153,17 @@ const T_TIMES = [
   'nyárutón', 'tél derekán', 'márciusban', 'egy esős kedden', 'holdtöltekor',
 ]
 
-/** One random Hungarian song theme for the lyricist. */
+/** One random Hungarian song theme for the lyricist.
+ * Fixed structure: feelings (+times) and places (+objects). */
 export function rollTheme(): string {
   const places = withCustom(T_PLACES, 'places', customTheme)
   const feelings = withCustom(T_FEELINGS, 'feelings', customTheme)
   const objects = withCustom(T_OBJECTS, 'objects', customTheme)
   const times = withCustom(T_TIMES, 'times', customTheme)
-  const templates = [
-    `${pick(places)}, ${pick(times)}`,
-    `${pick(places)}, ${pick(feelings)}`,
-    `${pick(feelings)} ${pick(times)}`,
-    `${pick(objects)} és ${pick(feelings)}`,
-    `${pick(places)} — ${pick(objects)}`,
-    `${pick(times)} a ${pick(places)} mellett`,
-  ]
-  return pick(templates)
+  let out = `${pick(feelings)}, ${pick(places)}`
+  if (Math.random() < 0.6) out += `, ${pick(times)}`
+  if (Math.random() < 0.5) out += `, ${pick(objects)}`
+  return out
 }
 
 Object.assign(BUILTIN_PROMPT, { moods: P_MOODS, genres: P_GENRES, instruments: P_INSTRUMENTS, images: P_IMAGES, extras: P_EXTRAS, eras: P_ERAS });
