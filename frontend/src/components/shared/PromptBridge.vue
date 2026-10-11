@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { preparePrompt, promptStatus } from '../../api/prompt'
 import type { PromptLang, PromptPrepareResult } from '../../api/prompt'
 import { rollPrompt } from '../../utils/wordbank'
+import { formResetToken } from '../../utils/formReset'
 
 const props = defineProps<{ target: string }>()
 const emit = defineEmits<{ apply: [result: PromptPrepareResult] }>()
@@ -91,6 +92,12 @@ async function submit() {
 function apply() {
   if (result.value) emit('apply', result.value)
 }
+
+watch(formResetToken, () => {
+  input.value = ''
+  result.value = null
+  error.value = ''
+})
 </script>
 
 <template>

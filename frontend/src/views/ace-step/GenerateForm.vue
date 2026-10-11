@@ -13,6 +13,7 @@ import HelpIconButton from '../../components/shared/HelpIconButton.vue'
 import PromptBridge from '../../components/shared/PromptBridge.vue'
 import LyricistBox from '../../components/shared/LyricistBox.vue'
 import TagInput from '../../components/shared/TagInput.vue'
+import { fireFormReset } from '../../utils/formReset'
 import { downloadRecipe, readRecipeFile } from '../../utils/recipe'
 import type { Recipe } from '../../utils/recipe'
 
@@ -354,6 +355,38 @@ const durationLabel = computed(() => {
   return `${m}:${String(s).padStart(2, '0')} (${duration.value}s)`
 })
 
+const refAudioInput = ref<HTMLInputElement | null>(null)
+
+function resetForm() {
+  mode.value = 'simple'
+  simpleQuery.value = ''
+  customPrompt.value = ''
+  instrumental.value = false
+  customLyrics.value = ''
+  useRefAudio.value = false
+  refAudioFile.value = null
+  if (refAudioInput.value) refAudioInput.value.value = ''
+  taskType.value = 'cover'
+  repaintStart.value = null
+  repaintEnd.value = null
+  trackName.value = 'vocals'
+  trackClasses.value = []
+  coverStrength.value = 1
+  duration.value = 120
+  batchSize.value = 1
+  audioFormat.value = 'mp3'
+  bpm.value = null
+  keyScale.value = ''
+  timeSignature.value = ''
+  vocalLanguage.value = ''
+  inferenceSteps.value = null
+  guidanceScale.value = null
+  seedValue.value = null
+  formError.value = ''
+  selectedPresetName.value = ''
+  fireFormReset()
+}
+
 async function submit() {
   formError.value = ''
 
@@ -546,6 +579,14 @@ async function onRecipeFile(e: Event) {
         </button>
         <input ref="recipeFileInput" type="file" accept=".json,application/json" class="hidden" @change="onRecipeFile" />
         <button
+          type="button"
+          class="rounded border border-border px-2 py-1 text-xs text-text hover:bg-panel"
+          :title="t('aceGen.newForm')"
+          @click="resetForm"
+        >
+          {{ t('aceGen.newForm') }}
+        </button>
+        <button
           v-if="selectedPresetName"
           type="button"
           class="rounded px-1.5 py-1 text-xs text-status-failed hover:bg-status-failed/10"
@@ -635,7 +676,7 @@ async function onRecipeFile(e: Event) {
           <HelpIconButton @click="helpOpen = 'remix'" />
         </label>
         <div v-if="useRefAudio" class="space-y-3 pt-1">
-          <input type="file" accept="audio/*" class="block w-full text-xs text-text-dim file:mr-3 file:rounded-md file:border-0 file:accent-gradient file:px-3 file:py-1.5 file:text-white" @change="onRefFileChange" />
+          <input ref="refAudioInput" type="file" accept="audio/*" class="block w-full text-xs text-text-dim file:mr-3 file:rounded-md file:border-0 file:accent-gradient file:px-3 file:py-1.5 file:text-white" @change="onRefFileChange" />
           <p v-if="refAudioFile" class="text-xs text-text-dim">{{ refAudioFile.name }}</p>
 
           <ChipGroup v-model="taskType" :options="taskTypeOptions" />

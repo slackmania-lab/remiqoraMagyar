@@ -175,6 +175,7 @@ export default {
     presetNamePlaceholder: 'Preset name',
     save: 'Save',
     cancel: 'Cancel',
+    newForm: 'New form',
     recipeImport: 'Import a generation recipe (.remiqora.json)',
     recipeInvalid: 'Not a valid recipe file.',
     recipeWrongEngine: 'This recipe is for the other engine.',

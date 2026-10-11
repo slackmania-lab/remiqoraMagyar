@@ -175,6 +175,7 @@ export default {
     presetNamePlaceholder: 'Preset neve',
     save: 'Mentés',
     cancel: 'Mégse',
+    newForm: 'Új űrlap',
     recipeImport: 'Generálási recept importálása (.remiqora.json)',
     recipeInvalid: 'Érvénytelen receptfájl.',
     recipeWrongEngine: 'Ez a recept a másik motorhoz való.',

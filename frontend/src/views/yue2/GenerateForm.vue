@@ -11,6 +11,7 @@ import HelpIconButton from '../../components/shared/HelpIconButton.vue'
 import PromptBridge from '../../components/shared/PromptBridge.vue'
 import LyricistBox from '../../components/shared/LyricistBox.vue'
 import TagInput from '../../components/shared/TagInput.vue'
+import { fireFormReset } from '../../utils/formReset'
 import { downloadRecipe, readRecipeFile } from '../../utils/recipe'
 import type { Recipe } from '../../utils/recipe'
 
@@ -114,6 +115,7 @@ const abc = ref('')
 const instrumental = ref(false)
 
 const coverFile = ref<File | null>(null)
+const coverFileInput = ref<HTMLInputElement | null>(null)
 const unloadSheetSage = ref(true)
 const extracting = ref(false)
 const coverStatus = ref('')
@@ -208,6 +210,29 @@ function onLyricsApply(text: string) {
     lyrics.value = text
     instrumental.value = false
   }
+}
+
+function resetForm() {
+  lyrics.value = ''
+  style.value = ''
+  cot.value = 'off'
+  precision.value = 'q8_0'
+  abc.value = ''
+  instrumental.value = false
+  seed.value = 831001
+  randomSeed.value = true
+  batchSize.value = 1
+  cfgScale.value = null
+  numInferenceSteps.value = 8
+  for (const f of SAMPLING_FIELDS) {
+    semantic[f.key] = null
+    abcSampling[f.key] = null
+  }
+  coverFile.value = null
+  if (coverFileInput.value) coverFileInput.value.value = ''
+  formError.value = ''
+  selectedPresetName.value = ''
+  fireFormReset()
 }
 
 function onPromptApply(r: { style_en: string; lyrics: string; simple: string }) {
@@ -407,6 +432,14 @@ async function onRecipeFile(e: Event) {
         </button>
         <input ref="recipeFileInput" type="file" accept=".json,application/json" class="hidden" @change="onRecipeFile" />
         <button
+          type="button"
+          class="rounded border border-border px-2 py-1 text-xs text-text hover:bg-panel"
+          :title="t('aceGen.newForm')"
+          @click="resetForm"
+        >
+          {{ t('aceGen.newForm') }}
+        </button>
+        <button
           v-if="selectedPresetName"
           type="button"
           class="rounded px-1.5 py-1 text-xs text-status-failed hover:bg-status-failed/10"
@@ -490,7 +523,7 @@ async function onRecipeFile(e: Event) {
         </div>
         <div class="space-y-2 rounded-lg border border-border bg-panel p-3">
           <p class="text-xs font-medium text-text">{{ t('yueGen.extractSectionTitle') }}</p>
-          <input type="file" accept="audio/*" class="block w-full text-xs text-text-dim file:mr-3 file:rounded-md file:border-0 file:accent-gradient file:px-3 file:py-1.5 file:text-white" @change="onCoverFileChange" />
+          <input ref="coverFileInput" type="file" accept="audio/*" class="block w-full text-xs text-text-dim file:mr-3 file:rounded-md file:border-0 file:accent-gradient file:px-3 file:py-1.5 file:text-white" @change="onCoverFileChange" />
           <label class="flex items-center gap-2 text-xs text-text-dim">
             <input v-model="unloadSheetSage" type="checkbox" class="rounded border-border" />
             {{ t('yueGen.unloadSheetSage') }}

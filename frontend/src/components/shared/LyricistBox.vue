@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { LYRIC_LANGS, promptStatus, writeLyrics } from '../../api/prompt'
+import { formResetToken } from '../../utils/formReset'
 import { rollTheme } from '../../utils/wordbank'
 
 const emit = defineEmits<{ apply: [lyrics: string, lang: string] }>()
@@ -73,8 +74,18 @@ async function submit() {
 }
 
 function apply() {
-  if (result.value) emit('apply', result.value, lang.value)
+  if (result.value) {
+    emit('apply', result.value, lang.value)
+    // The preview was auto-inserted: clear the temporary copy.
+    result.value = ''
+  }
 }
+
+watch(formResetToken, () => {
+  theme.value = ''
+  result.value = ''
+  error.value = ''
+})
 </script>
 
 <template>

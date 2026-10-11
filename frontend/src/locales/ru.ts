@@ -175,6 +175,7 @@ export default {
     presetNamePlaceholder: 'Название пресета',
     save: 'Сохранить',
     cancel: 'Отмена',
+    newForm: 'Новая форма',
     recipeImport: 'Импорт рецепта генерации (.remiqora.json)',
     recipeInvalid: 'Некорректный файл рецепта.',
     recipeWrongEngine: 'Этот рецепт для другого движка.',
