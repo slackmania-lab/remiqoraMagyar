@@ -78,6 +78,16 @@ async function onSelect(id: ModelId) {
     // orchestrator.switchError already holds the message, rendered below.
   }
 }
+
+async function onRestart() {
+  const id = orchestrator.activeModel
+  if (!id || orchestrator.switching) return
+  try {
+    await orchestrator.restartModel(id)
+  } catch {
+    // orchestrator.switchError already holds the message, rendered below.
+  }
+}
 </script>
 
 <template>
@@ -168,6 +178,17 @@ async function onSelect(id: ModelId) {
           <span class="h-2 w-2 rounded-full" :class="LED_CLASSES[statusOf(id)]"></span>
           <span>{{ MODEL_LABELS[id] }}</span>
           <span class="hidden text-xs text-text-dim sm:inline">{{ t(STATUS_LABEL_KEYS[statusOf(id)]) }}</span>
+        </button>
+        <button
+          v-if="orchestrator.activeModel && ['running', 'error'].includes(statusOf(orchestrator.activeModel)) && !orchestrator.switching"
+          type="button"
+          class="flex items-center gap-2 rounded-lg border border-border bg-panel-2 px-3 py-2 text-sm text-text-dim transition-colors hover:text-text"
+          :title="t('header.restartHint')"
+          :aria-label="t('header.restart')"
+          @click="onRestart"
+        >
+          <span aria-hidden="true">↻</span>
+          <span class="hidden text-xs sm:inline">{{ t('header.restart') }}</span>
         </button>
       </nav>
     </div>

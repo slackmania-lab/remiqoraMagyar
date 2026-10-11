@@ -19,6 +19,8 @@ export default {
     tagline: 'AI-jal készült. Te alkottad.',
     help: 'Így működik',
     volume: 'Fő hangerő',
+    restart: 'Újraindítás',
+    restartHint: 'A futó motor teljes újraindítása (stop + start). Ha beékelődött egy generálás és az újak elhasalnak.',
     helpTitle: 'Mi ez és hogyan működik',
     helpSections: {
       what: { title: 'Mi a Remiqora', text: 'Helyi stúdió AI-zenekészítéshez. Számokat generál leírásból vagy dalszövegből, sávokra (stemekre) bontja őket, kinyeri a dallamot MIDI-ként, saját stílusadaptereket (LoRA) tanít, és mindent egy sávos szerkesztőben rendezhetsz és keverhetsz össze, egyetlen felületen.' },

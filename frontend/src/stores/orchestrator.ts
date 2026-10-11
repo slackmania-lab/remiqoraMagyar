@@ -66,6 +66,24 @@ export const useOrchestratorStore = defineStore('orchestrator', {
     async stopActive() {
       this._applySnapshot(await api.stopActive())
     },
+    /** Full restart of one engine: stop everything, then start it again.
+     * The only way out when an inference wedges inside a CUDA call, which
+     * userspace cannot cancel (the native server then answers every new
+     * request with "busy ... cannot be cancelled"). */
+    async restartModel(model: ModelId) {
+      this.switching = true
+      this.switchError = null
+      try {
+        this._applySnapshot(await api.stopActive())
+        this._applySnapshot(await api.switchModel(model))
+      } catch (err) {
+        this.switchError = err instanceof Error ? err.message : String(err)
+        await this.refresh()
+        throw err
+      } finally {
+        this.switching = false
+      }
+    },
   },
 })
 
