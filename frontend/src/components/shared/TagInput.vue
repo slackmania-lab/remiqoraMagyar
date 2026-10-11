@@ -33,8 +33,11 @@ function addTags(raw: string[]): void {
 }
 
 function addTag(raw: string): void {
+  // Pasted card text carries the chips' own × glyphs ("bitter × bent ×"):
+  // turn them back into separators instead of tag content.
+  const parts = raw.replace(/[×✕✖✗]/g, ',').split(',')
   draft.value = ''
-  addTags([raw])
+  addTags(parts)
 }
 
 function removeTag(tag: string): void {
@@ -100,6 +103,15 @@ function selectSuggestion(s: string): void {
   highlighted.value = -1
   inputEl.value?.focus()
 }
+
+// Whatever is still typed when the field loses focus (e.g. the user hits
+// Create without pressing Enter first) becomes a tag instead of silently
+// dropped text. Suggestion clicks use mousedown+prevent so they never blur.
+function commitDraft(): void {
+  focused.value = false
+  suggestionsOpen.value = false
+  if (draft.value.trim()) addTag(draft.value)
+}
 </script>
 
 <template>
@@ -119,7 +131,7 @@ function selectSuggestion(s: string): void {
         @keydown="onKeydown"
         @paste="onPaste"
         @focus="focused = true; suggestionsOpen = true"
-        @blur="focused = false"
+        @blur="commitDraft"
       />
       <button
         v-if="tags.length"

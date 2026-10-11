@@ -65,6 +65,9 @@ function rollDice() {
 async function submit() {
   error.value = ''
   result.value = null
+  // Pasting straight from a card drags the chips' × glyphs along; turn them
+  // back into separators before translating.
+  input.value = input.value.replace(/[×✕✖✗]/g, ',')
   if (!input.value.trim()) return
   loading.value = true
   try {
