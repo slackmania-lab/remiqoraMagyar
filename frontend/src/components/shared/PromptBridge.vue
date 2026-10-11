@@ -3,11 +3,11 @@ import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { preparePrompt, promptStatus } from '../../api/prompt'
 import type { PromptLang, PromptPrepareResult } from '../../api/prompt'
-import { rollPrompt } from '../../utils/wordbank'
+import { rollPrompt, rollDiceNumbers } from '../../utils/wordbank'
 import { formResetToken } from '../../utils/formReset'
 
 const props = defineProps<{ target: string }>()
-const emit = defineEmits<{ apply: [result: PromptPrepareResult] }>()
+const emit = defineEmits<{ apply: [result: PromptPrepareResult]; numbers: [nums: { cfg: number; temp: number }] }>()
 
 const { t } = useI18n()
 const input = ref('')
@@ -60,6 +60,8 @@ function rollDice() {
   input.value = rollPrompt()
   error.value = ''
   result.value = null
+  // Every music dice roll also rolls CFG + temperature for the form's knobs.
+  emit('numbers', rollDiceNumbers())
 }
 
 async function submit() {

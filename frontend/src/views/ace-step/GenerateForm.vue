@@ -325,6 +325,11 @@ function registerNewLora() {
   newLoraName.value = ''
   newLoraPath.value = ''
 }
+function onBridgeNumbers(nums: { cfg: number; temp: number }) {
+  // ACE has no temperature knob; the CFG roll drives guidance scale
+  // (ignored by turbo models). Temperature has nowhere to go here.
+  guidanceScale.value = nums.cfg
+}
 
 function onLyricsApply(text: string, lang: string) {
   if (text) {
@@ -619,7 +624,7 @@ async function onRecipeFile(e: Event) {
         </div>
       </div>
 
-      <PromptBridge :target="mode === 'simple' ? 'ace_simple' : 'ace_custom'" @apply="onPromptApply" />
+      <PromptBridge :target="mode === 'simple' ? 'ace_simple' : 'ace_custom'" @apply="onPromptApply" @numbers="onBridgeNumbers" />
 
       <div class="flex gap-2 rounded-lg bg-panel-2 p-1 text-sm">
         <button

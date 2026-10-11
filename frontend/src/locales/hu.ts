@@ -822,6 +822,12 @@ export default {
     reset: 'Visszaállítás',
     resetHint: 'A szakasz szerkesztéseinek elvetése, beépítettek vissza',
     resetConfirm: 'Eldobod a szakasz szerkesztéseit, és visszaállnak a beépített szavak?',
+    diceTitle: 'Kocka számtartományok',
+    diceHint: 'A 🎲 CFG-t és sampling-hőmérsékletet is dob a form csúszkáira, ezeken belül.',
+    cfgMin: 'CFG min',
+    cfgMax: 'CFG max',
+    tempMin: 'Temp min',
+    tempMax: 'Temp max',
     builtin: 'Beépített',
     cats: {
       moods: 'Hangulatok', genres: 'Műfajok', instruments: 'Hangszerek', images: 'Képek',

@@ -820,6 +820,12 @@ export default {
     reset: 'Reset',
     resetHint: 'Discard your edits in this section, restore built-ins',
     resetConfirm: 'Discard your edits in this section and restore the built-in words?',
+    diceTitle: 'Dice number ranges',
+    diceHint: 'The 🎲 also rolls CFG scale and sampling temperature for the form knobs, within these ranges.',
+    cfgMin: 'CFG min',
+    cfgMax: 'CFG max',
+    tempMin: 'Temp min',
+    tempMax: 'Temp max',
     builtin: 'Built-in',
     cats: {
       moods: 'Moods', genres: 'Genres', instruments: 'Instruments', images: 'Imagery',

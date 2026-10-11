@@ -235,8 +235,12 @@ function resetForm() {
   fireFormReset()
 }
 
-function onPromptApply(r: { style_en: string; lyrics: string; simple: string }) {
-  if (r.style_en) style.value = r.style_en
+function onBridgeNumbers(nums: { cfg: number; temp: number }) {
+  cfgScale.value = nums.cfg
+  semantic.temperature = nums.temp
+}
+
+function onPromptApply(r: { style_en: string; lyrics: string; simple: string }) {  if (r.style_en) style.value = r.style_en
   // Only fill lyrics when the field is empty — never overwrite the user's own text.
   if (r.lyrics && !lyrics.value.trim()) {
     lyrics.value = r.lyrics
@@ -472,7 +476,7 @@ async function onRecipeFile(e: Event) {
         </div>
       </div>
 
-      <PromptBridge target="yue2" @apply="onPromptApply" />
+      <PromptBridge target="yue2" @apply="onPromptApply" @numbers="onBridgeNumbers" />
 
       <LyricistBox @apply="onLyricsApply" />
 

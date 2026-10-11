@@ -192,5 +192,62 @@ export function rollTheme(): string {
   return out
 }
 
-Object.assign(BUILTIN_PROMPT, { moods: P_MOODS, genres: P_GENRES, instruments: P_INSTRUMENTS, images: P_IMAGES, extras: P_EXTRAS, eras: P_ERAS, tempo: P_TEMPO, vocals: P_VOCALS, production: P_PROD });
-Object.assign(BUILTIN_THEME, { places: T_PLACES, feelings: T_FEELINGS, objects: T_OBJECTS, times: T_TIMES });
+Object.assign(BUILTIN_PROMPT, { moods: P_MOODS, genres: P_GENRES, instruments: P_INSTRUMENTS, images: P_IMAGES, extras: P_EXTRAS, eras: P_ERAS, tempo: P_TEMPO, vocals: P_VOCALS, production: P_PROD });Object.assign(BUILTIN_THEME, { places: T_PLACES, feelings: T_FEELINGS, objects: T_OBJECTS, times: T_TIMES });
+
+// ---------------------------------------------------------------------------
+// Dice number ranges (CFG scale + sampling temperature), per-browser config.
+// ---------------------------------------------------------------------------
+
+export interface DiceRanges {
+  cfgMin: number
+  cfgMax: number
+  tempMin: number
+  tempMax: number
+}
+
+const RANGES_KEY = 'remiqora_dice_ranges'
+
+export const DEFAULT_RANGES: DiceRanges = { cfgMin: 2, cfgMax: 8, tempMin: 0.6, tempMax: 1.0 }
+
+export function getDiceRanges(): DiceRanges {
+  try {
+    const raw = localStorage.getItem(RANGES_KEY)
+    if (raw) {
+      const p = JSON.parse(raw) as Partial<DiceRanges>
+      const num = (v: unknown, fb: number): number => (typeof v === 'number' && Number.isFinite(v) ? v : fb)
+      const r = {
+        cfgMin: num(p.cfgMin, DEFAULT_RANGES.cfgMin),
+        cfgMax: num(p.cfgMax, DEFAULT_RANGES.cfgMax),
+        tempMin: num(p.tempMin, DEFAULT_RANGES.tempMin),
+        tempMax: num(p.tempMax, DEFAULT_RANGES.tempMax),
+      }
+      if (r.cfgMax < r.cfgMin) [r.cfgMin, r.cfgMax] = [r.cfgMax, r.cfgMin]
+      if (r.tempMax < r.tempMin) [r.tempMin, r.tempMax] = [r.tempMax, r.tempMin]
+      return r
+    }
+  } catch {
+    // ignore - fall through to defaults
+  }
+  return { ...DEFAULT_RANGES }
+}
+
+export function setDiceRanges(r: DiceRanges): void {
+  try {
+    localStorage.setItem(RANGES_KEY, JSON.stringify(r))
+  } catch {
+    // ignore - private browsing etc.
+  }
+}
+
+function round2(v: number): number {
+  return Math.round(v * 100) / 100
+}
+
+/** Random CFG + temperature inside the configured ranges. */
+export function rollDiceNumbers(): { cfg: number; temp: number } {
+  const r = getDiceRanges()
+  return {
+    cfg: round2(r.cfgMin + Math.random() * Math.max(0, r.cfgMax - r.cfgMin)),
+    temp: round2(r.tempMin + Math.random() * Math.max(0, r.tempMax - r.tempMin)),
+  }
+}

@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { getWordbanks, saveWordbanks } from '../api/settings'
 import type { Wordbanks } from '../api/settings'
 import { BUILTIN_PROMPT, BUILTIN_THEME, PROMPT_CATS, THEME_CATS } from '../utils/wordbank'
+import { DEFAULT_RANGES, getDiceRanges, setDiceRanges } from '../utils/wordbank'
 
 const { t } = useI18n()
 // One textarea per category, one word/phrase per line. Saved to the backend
@@ -14,6 +15,10 @@ const loading = ref(true)
 const saving = ref(false)
 const error = ref('')
 const savedAt = ref('')
+const rangeCfgMin = ref(DEFAULT_RANGES.cfgMin)
+const rangeCfgMax = ref(DEFAULT_RANGES.cfgMax)
+const rangeTempMin = ref(DEFAULT_RANGES.tempMin)
+const rangeTempMax = ref(DEFAULT_RANGES.tempMax)
 
 function merged(cat: string, builtins: Record<string, string[]>, custom: Record<string, string[]>): string[] {
   const seen: string[] = []
@@ -34,6 +39,11 @@ function fromText(raw: string): string[] {
 }
 
 onMounted(async () => {
+  const r = getDiceRanges()
+  rangeCfgMin.value = r.cfgMin
+  rangeCfgMax.value = r.cfgMax
+  rangeTempMin.value = r.tempMin
+  rangeTempMax.value = r.tempMax
   try {
     const banks = await getWordbanks()
     // The textareas hold the FULL effective list (built-ins + customs), so
@@ -69,7 +79,8 @@ async function resetSection(key: 'prompt' | 'theme') {
   }
 }
 
-async function save() {  error.value = ''
+async function save() {
+  error.value = ''
   savedAt.value = ''
   saving.value = true
   try {
@@ -83,6 +94,12 @@ async function save() {  error.value = ''
       if (words.length > 0) banks.theme[cat] = words
     }
     await saveWordbanks(banks)
+    setDiceRanges({
+      cfgMin: rangeCfgMin.value,
+      cfgMax: rangeCfgMax.value,
+      tempMin: rangeTempMin.value,
+      tempMax: rangeTempMax.value,
+    })
     savedAt.value = new Date().toLocaleTimeString()
   } catch (err) {
     error.value = err instanceof Error ? err.message : String(err)
@@ -147,6 +164,28 @@ async function save() {  error.value = ''
               class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text"
               :placeholder="t('settings.wordPlaceholder')"
             ></textarea>
+          </div>
+        </div>
+      </section>
+      <section class="space-y-3">
+        <h2 class="text-lg font-semibold text-text">{{ t('settings.diceTitle') }}</h2>
+        <p class="text-sm text-text-dim">{{ t('settings.diceHint') }}</p>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div>
+            <label class="mb-1 block text-[13px] font-medium text-text">{{ t('settings.cfgMin') }}</label>
+            <input v-model.number="rangeCfgMin" type="number" step="0.1" class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text" />
+          </div>
+          <div>
+            <label class="mb-1 block text-[13px] font-medium text-text">{{ t('settings.cfgMax') }}</label>
+            <input v-model.number="rangeCfgMax" type="number" step="0.1" class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text" />
+          </div>
+          <div>
+            <label class="mb-1 block text-[13px] font-medium text-text">{{ t('settings.tempMin') }}</label>
+            <input v-model.number="rangeTempMin" type="number" step="0.05" class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text" />
+          </div>
+          <div>
+            <label class="mb-1 block text-[13px] font-medium text-text">{{ t('settings.tempMax') }}</label>
+            <input v-model.number="rangeTempMax" type="number" step="0.05" class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text" />
           </div>
         </div>
       </section>
