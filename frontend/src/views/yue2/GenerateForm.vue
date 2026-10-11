@@ -11,7 +11,7 @@ import HelpIconButton from '../../components/shared/HelpIconButton.vue'
 import PromptBridge from '../../components/shared/PromptBridge.vue'
 import LyricistBox from '../../components/shared/LyricistBox.vue'
 import TagInput from '../../components/shared/TagInput.vue'
-import { estimateAbcSeconds, extendAbc } from '../../utils/abcExtend'
+import { estimateAbcSeconds, extendAbc, muteVocalAbc } from '../../utils/abcExtend'
 import { fireFormReset } from '../../utils/formReset'
 import { downloadRecipe, readRecipeFile } from '../../utils/recipe'
 import type { Recipe } from '../../utils/recipe'
@@ -246,6 +246,12 @@ const abcPlanSeconds = computed(() => estimateAbcSeconds(abc.value))
 function extendPlan(times: number) {
   const extended = extendAbc(abc.value, times)
   if (extended != null) abc.value = extended
+  else formError.value = t('yueGen.abcExtendFailed')
+}
+
+function muteVocalPlan() {
+  const muted = muteVocalAbc(abc.value)
+  if (muted != null) abc.value = muted
   else formError.value = t('yueGen.abcExtendFailed')
 }
 
@@ -538,6 +544,7 @@ async function onRecipeFile(e: Event) {
               <span v-if="abcPlanSeconds > 0">{{ t('yueGen.abcPlanLength', { n: abcPlanSeconds }) }}</span>
               <button type="button" class="rounded border border-border px-2 py-0.5 hover:bg-panel-2 hover:text-text" :title="t('yueGen.abcExtendHint')" @click="extendPlan(2)">×2</button>
               <button type="button" class="rounded border border-border px-2 py-0.5 hover:bg-panel-2 hover:text-text" :title="t('yueGen.abcExtendHint')" @click="extendPlan(3)">×3</button>
+              <button type="button" class="rounded border border-border px-2 py-0.5 hover:bg-panel-2 hover:text-text" :title="t('yueGen.abcMuteHint')" @click="muteVocalPlan">🔇</button>
             </template>
             <span v-else>{{ t('yueGen.abcEmptyHint') }}</span>
           </div>

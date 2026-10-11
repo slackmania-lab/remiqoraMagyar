@@ -356,6 +356,7 @@ export default {
     abcEmptyHint: 'Generate once (or extract) to get a plan here, then extend it ×2/×3.',
     abcPlanLength: 'Plan length: ~{n}s',
     abcExtendHint: 'Repeat the whole plan body (all voices stay in sync) to aim for a longer track',
+    abcMuteHint: 'Drop the Vocal voice body from the plan (keeps Ins only) to starve vocal-pad humming',
     abcExtendFailed: 'Could not find repeatable voice blocks in this ABC text.',
     extractSectionTitle: 'Extract melody from audio (SheetSage2)',
     unloadSheetSage: 'Unload SheetSage2 after extraction',

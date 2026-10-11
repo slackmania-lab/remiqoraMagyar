@@ -20,6 +20,32 @@ function isBareVoiceSelector(line: string): boolean {
 }
 
 /**
+ * Drop the whole Vocal voice body (all bare `V: Vocal` blocks) from a YuE2
+ * ABC plan. The header voice definitions stay, only the sounding blocks go,
+ * so the parser still sees a valid two-voice score. Goal: starve any
+ * vocal-pad/hum rendering when the plan's Vocal staff only carries rests
+ * and chord symbols anyway. Returns null when no Vocal body blocks exist.
+ */
+export function muteVocalAbc(abc: string): string | null {
+  const lines = abc.replace(/\r\n/g, '\n').split('\n')
+  const out: string[] = []
+  let removed = 0
+  let skipping = false
+  for (const line of lines) {
+    if (/^V:\s*\S+\s*$/.test(line) && !line.includes('=')) {
+      skipping = /^V:\s*[Vv]ocal\s*$/.test(line)
+      if (skipping) {
+        removed++
+        continue
+      }
+    }
+    if (!skipping) out.push(line)
+  }
+  if (removed === 0) return null
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n'
+}
+
+/**
  * Repeat the plan body (all voice blocks) to lengthen the composition.
  * Header (X/T/M/L/Q/K + voice definitions) stays untouched; only complete
  * voice blocks are duplicated, so voices never go out of sync.

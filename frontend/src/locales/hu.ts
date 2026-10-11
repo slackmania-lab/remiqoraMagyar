@@ -356,6 +356,7 @@ export default {
     abcEmptyHint: 'Generálj egyet (vagy nyerj ki), hogy legyen terv, aztán hosszabbíts ×2/×3-mal.',
     abcPlanLength: 'Terv hossza: ~{n} mp',
     abcExtendHint: 'A teljes tervtest ismétlése (a szólamok szinkronban maradnak) hosszabb számhoz',
+    abcMuteHint: 'Vocal-szólam kidobása a tervből (csak Ins marad) a vokális zümmögés ellen',
     abcExtendFailed: 'Nem találhatók ismételhető szólamblokkok ebben az ABC-szövegben.',
     extractSectionTitle: 'Dallam kinyerése hangból (SheetSage2)',
     unloadSheetSage: 'SheetSage2 kirakása kinyerés után',
