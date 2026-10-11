@@ -201,7 +201,11 @@ LYRICS_SYSTEM_PROMPT = (
     "Rules: short singable lines (roughly 6-10 syllables), real rhymes (not "
     "assonance soup), concrete images over abstractions, one clear emotion per "
     "song, chorus with a hook that repeats verbatim. Never reuse famous "
-    "copyrighted lyrics. Keep it under 2000 characters."
+    "copyrighted lyrics. Keep it under 2000 characters. "
+    "CRITICAL: every single word of the song must be in the requested "
+    "language. Translate ALL theme words — never copy a theme word verbatim "
+    "into the lyrics (e.g. Hungarian 'magány' must become 'solitude' or "
+    "'loneliness', 'kavics' must become 'pebble'). No mixed-language lines, ever."
 )
 
 # ISO code -> language name used inside the lyricist prompt.
@@ -259,6 +263,11 @@ async def prompt_lyrics(body: LyricsIn):
     if lang not in LYRICS_LANGS:
         raise HTTPException(status_code=400, detail=f"Unsupported lyrics language: {body.lang}")
     theme = " ".join(body.theme.split())
+    # NOTE: no pre-translation here on purpose. An earlier version piped the
+    # theme through NLLB first, but short fragments mistranslate without
+    # context ("kavics" -> "coughing") and poison the whole song topic. The
+    # LLM knows common Hungarian words itself; the CRITICAL rule above keeps
+    # them out of the lyrics.
     parts = [f"{body.verses} verse(s)"]
     if body.chorus:
         parts.append("a repeating [Chorus] after every second verse")
