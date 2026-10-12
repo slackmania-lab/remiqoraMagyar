@@ -106,6 +106,30 @@ async def _run_blocking(fn, *args):
     return await asyncio.to_thread(fn, *args)
 
 
+_SECTION_WORDS = (
+    "intro|verse(?:\\s+\\d+)?|chorus|post[\\s-]*chorus|bridge|break|"
+    "guitar\\s+solo|drum\\s+solo|tabla\\s+solo|solo|outro|instrumental"
+)
+
+
+def _normalize_section_headers(text: str) -> str:
+    """Wrap bare section header lines in square brackets.
+
+    Models often return `Verse 1` instead of `[Verse 1]` although asked
+    otherwise; YuE2 parses the bracketed form, so fix it deterministically.
+    """
+    out: list[str] = []
+    for line in text.split("\n"):
+        s = line.strip()
+        if s and not (s.startswith("[") and s.endswith("]")) and re.fullmatch(_SECTION_WORDS, s, flags=re.IGNORECASE):
+            indent = line[: len(line) - len(line.lstrip())]
+            core = " ".join(w[:1].upper() + w[1:] for w in s.split())
+            out.append(f"{indent}[{core}]")
+        else:
+            out.append(line)
+    return "\n".join(out)
+
+
 @router.get("/status")
 async def prompt_status():
     from .. import nllb
@@ -225,16 +249,40 @@ LYRICS_LANGS: dict[str, str] = {
 
 LYRIC_DEFAULT_MODELS = ("qwen3:8b", "qwen3.5:9b", "llama3.1:8b")
 
+# Allowed song sections, in canonical order. Rendered as [Intro], [Verse 1]...
+LYRIC_SECTIONS: dict[str, str] = {
+    "intro": "an opening [Intro]",
+    "verse": "numbered [Verse 1], [Verse 2], ... sections",
+    "chorus": "a repeating [Chorus] with a verbatim hook",
+    "postchorus": "a [Post-Chorus] tag after the chorus",
+    "bridge": "one [Bridge] with a perspective shift",
+    "break": "a short instrumental [Break]",
+    "guitarsolo": "a [Guitar Solo] section",
+    "drumsolo": "a [Drum Solo] section",
+    "tablasolo": "a [Tabla Solo] section",
+    "outro": "a closing [Outro]",
+}
+SECTION_ORDER = ("intro", "verse", "chorus", "postchorus", "bridge", "break", "guitarsolo", "drumsolo", "tablasolo", "outro")
+
 
 class LyricsIn(BaseModel):
     theme: str = Field(min_length=1, max_length=1000)
     lang: str = Field(default="en", max_length=8)
     verses: int = Field(default=3, ge=1, le=8)
-    chorus: bool = Field(default=True)
-    bridge: bool = Field(default=False)
-    outro: bool = Field(default=False)
+    sections: list[str] = Field(default_factory=lambda: ["chorus"])
     mood: str = Field(default="", max_length=40)
     model: str = Field(default="", max_length=64)
+
+
+def _describe_sections(sections: list[str], verses: int) -> str:
+    picked = [s for s in SECTION_ORDER if s in set(sections) or (s == "verse" and verses > 0)]
+    parts: list[str] = []
+    for s in picked:
+        if s == "verse":
+            parts.append(f"{verses} numbered verse sections ([Verse 1], [Verse 2], ...)" if verses != 1 else "one [Verse 1] section")
+        else:
+            parts.append(LYRIC_SECTIONS[s])
+    return "; ".join(parts) if parts else "numbered verse sections ([Verse 1], [Verse 2], ...)"
 
 
 class LyricsOut(BaseModel):
@@ -268,14 +316,7 @@ async def prompt_lyrics(body: LyricsIn):
     # context ("kavics" -> "coughing") and poison the whole song topic. The
     # LLM knows common Hungarian words itself; the CRITICAL rule above keeps
     # them out of the lyrics.
-    parts = [f"{body.verses} verse(s)"]
-    if body.chorus:
-        parts.append("a repeating [Chorus] after every second verse")
-    if body.bridge:
-        parts.append("one [Bridge] with a perspective shift before the last chorus")
-    if body.outro:
-        parts.append("a short closing [Outro]")
-    structure = ", ".join(parts)
+    structure = _describe_sections(body.sections, body.verses)
     mood = " ".join(body.mood.split())
     mood_line = f"\nMood: {mood}" if mood else ""
     try:
@@ -312,4 +353,5 @@ async def prompt_lyrics(body: LyricsIn):
     # Strip accidental fences/prose wrappers models sometimes add.
     text = re.sub(r"^```(?:\w+)?\s*", "", text)
     text = re.sub(r"\s*```$", "", text).strip()
+    text = _normalize_section_headers(text)
     return LyricsOut(lyrics=text, lang=lang, model=model)

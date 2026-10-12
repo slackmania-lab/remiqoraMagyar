@@ -11,9 +11,7 @@ const { t } = useI18n()
 const theme = ref('')
 const lang = ref(localStorage.getItem('lyricist_lang') || 'en')
 const verses = ref(3)
-const chorus = ref(true)
-const bridge = ref(false)
-const outro = ref(false)
+const sections = ref<string[]>(['chorus'])
 const mood = ref('')
 const models = ref<string[]>([])
 const selectedModel = ref(localStorage.getItem('lyricist_model') || '')
@@ -22,6 +20,23 @@ const error = ref('')
 const result = ref('')
 
 const LYRIC_DEFAULTS = ['qwen3:8b', 'qwen3.5:9b', 'llama3.1:8b', 'qwen2.5:3b']
+
+// Optional song parts in canonical order; labels are the literal ABC-style tags.
+const SECTION_CODES = ['intro', 'chorus', 'postchorus', 'bridge', 'break', 'guitarsolo', 'drumsolo', 'tablasolo', 'outro'] as const
+
+function sectionTag(code: string): string {
+  const map: Record<string, string> = {
+    intro: '[Intro]', chorus: '[Chorus]', postchorus: '[Post-Chorus]', bridge: '[Bridge]', break: '[Break]',
+    guitarsolo: '[Guitar Solo]', drumsolo: '[Drum Solo]', tablasolo: '[Tabla Solo]', outro: '[Outro]',
+  }
+  return map[code] || code
+}
+
+function toggleSection(code: string) {
+  const i = sections.value.indexOf(code)
+  if (i === -1) sections.value.push(code)
+  else sections.value.splice(i, 1)
+}
 
 onMounted(async () => {
   try {
@@ -63,7 +78,7 @@ async function submit() {
         // submit below will surface the real error
       }
     }
-    const r = await writeLyrics(theme.value.trim(), lang.value, verses.value, chorus.value, selectedModel.value, { bridge: bridge.value, outro: outro.value, mood: mood.value.trim() })
+    const r = await writeLyrics(theme.value.trim(), lang.value, verses.value, sections.value, mood.value.trim(), selectedModel.value)
     result.value = r.lyrics
     apply()
   } catch (err) {
@@ -113,17 +128,15 @@ watch(formResetToken, () => {
         {{ t('lyricist.verses') }}
         <input v-model.number="verses" type="number" min="1" max="8" class="w-12 rounded border border-border bg-panel px-1 py-1 text-xs text-text" />
       </label>
-      <label class="flex items-center gap-1 text-xs text-text-dim">
-        <input v-model="chorus" type="checkbox" class="rounded border-border" />
-        {{ t('lyricist.chorus') }}
-      </label>
-      <label class="flex items-center gap-1 text-xs text-text-dim">
-        <input v-model="bridge" type="checkbox" class="rounded border-border" />
-        {{ t('lyricist.bridge') }}
-      </label>
-      <label class="flex items-center gap-1 text-xs text-text-dim">
-        <input v-model="outro" type="checkbox" class="rounded border-border" />
-        {{ t('lyricist.outro') }}
+      <label
+        v-for="code in SECTION_CODES"
+        :key="code"
+        class="flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-xs"
+        :class="sections.includes(code) ? 'border-accent1/60 text-text' : 'border-border text-text-dim hover:text-text'"
+        :title="sectionTag(code)"
+      >
+        <input type="checkbox" class="sr-only" :checked="sections.includes(code)" @change="toggleSection(code)" />
+        {{ sectionTag(code) }}
       </label>
       <input
         v-model="mood"

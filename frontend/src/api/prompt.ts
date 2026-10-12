@@ -52,8 +52,8 @@ export interface LyricsResult {
   model: string
 }
 
-export async function writeLyrics(theme: string, lang: string, verses: number, chorus: boolean, model?: string, extra?: { bridge?: boolean; outro?: boolean; mood?: string }): Promise<LyricsResult> {
-  return apiJson<LyricsResult>('/api/prompt/lyrics', { theme, lang, verses, chorus, model: model || '', bridge: !!extra?.bridge, outro: !!extra?.outro, mood: extra?.mood || '' })
+export async function writeLyrics(theme: string, lang: string, verses: number, sections: string[], mood?: string, model?: string): Promise<LyricsResult> {
+  return apiJson<LyricsResult>('/api/prompt/lyrics', { theme, lang, verses, sections, mood: mood || '', model: model || '' })
 }
 
 export async function promptStatus(): Promise<PromptStatus> {
