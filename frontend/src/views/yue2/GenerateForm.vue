@@ -111,7 +111,7 @@ watch(
 const lyrics = ref('')
 const style = ref('')
 const cot = ref<CotMode>('off')
-const precision = ref<'q8_0' | 'q4_0'>('q8_0')
+const precision = ref<'q8_0' | 'q4_0'>('q4_0')
 const abc = ref('')
 const instrumental = ref(false)
 
