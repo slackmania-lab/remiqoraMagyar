@@ -106,17 +106,23 @@ def _restore_accents(text: str) -> str:
 
 
 def looks_hungarian(text: str) -> bool:
-    """Accent-independent heuristic. The bridge exists for Hungarian input, so
-    Hungarian wins ties; clear English markers (the/and/song/...) pass through."""
-    low = text.lower()
-    if any(ch in _HU_CHARS for ch in text):
-        return True
-    words = set(low.replace(",", " ").split())
-    has_hu = bool(words & _HU_STOP)
-    has_en = bool(words & (_EN_STOP - _HU_STOP))
-    if has_en and not has_hu:
+    """Accent-independent heuristic with a majority rule.
+
+    NLLB with a forced hun_Latn source hallucinates on English-dominant text
+    (e.g. six English tags plus one Hungarian word came back as
+    "I'm not sure I'm gonna make it"), so Hungarian must clearly dominate:
+    at least ~1 in 3 words carries Hungarian markers (diacritics or
+    stopwords). The bridge exists for Hungarian input, so pure ties still
+    default to Hungarian.
+    """
+    words = [w for w in text.lower().replace(",", " ").split() if w]
+    if not words:
         return False
-    return True
+    marked = 0
+    for w in words:
+        if any(ch in _HU_CHARS for ch in w) or w in _HU_STOP:
+            marked += 1
+    return (marked / len(words)) >= 0.3
 
 
 def _ensure_loaded() -> None:
@@ -168,7 +174,13 @@ def translate_to_english(text: str, src: str = "auto") -> tuple[str, str]:
     # NLLB sometimes decorates music-related lines with stray note symbols.
     en = re.sub(r"^[^A-Za-z0-9\u00C0-\u017F]+", "", en.strip())
     en = re.sub(r"[^A-Za-z0-9\u00C0-\u017F).!?\"]+$", "", en.strip())
-    return " ".join(en.split()), iso
+    en = " ".join(en.split())
+    # Last-resort guard: NLLB occasionally answers instead of translating
+    # ("I'm not sure...", "Sorry..."). A translation must never read like a
+    # chatbot reply — fall back to the (already accent-restored) input.
+    if re.search(r"(?i)\bi['’]m not sure\b|\bsorry\b|\bas an ai\b|\bi cannot\b|\bi can't\b", en):
+        return cleaned, iso
+    return en, iso
 
 
 def local_dir() -> Path:
