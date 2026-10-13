@@ -30,6 +30,8 @@ TRANSLATOR = os.getenv("TRANSLATOR", "auto").strip().lower() or "auto"
 SYSTEM_PROMPT = (
     "You are a music prompt translator for an AI music studio. "
     "Input is a free-form track description, in Hungarian or any other language. "
+    "It may already be partially pre-translated to English by a glossary; "
+    "translate any remaining non-English words yourself. "
     "Output STRICT JSON only, no markdown, no commentary, with keys: "
     '{"style_en": "...", "lyrics": "...", "simple": "...", "vocal_language": "..."}. '
     "Rules for style_en (MOST IMPORTANT): a DETAILED comma-separated list of ENGLISH "
@@ -174,6 +176,18 @@ async def prompt_prepare(body: PrepareIn):
             vocal_language=src if src != "en" else "",
         )
     model = (body.model or OLLAMA_MODEL).strip()
+    # Hybrid flow: a deterministic glossary pass first (Hungarian music words
+    # -> English, no hallucinations), then the running Ollama model expands
+    # it into rich tags and translates whatever is left. nllb is optional
+    # here — without it the raw text goes to the LLM as before.
+    try:
+        from .. import nllb as _nllb
+
+        pre, _ = _nllb.pretranslate(text)
+        if pre and pre != text:
+            text = pre
+    except (ImportError, RuntimeError):
+        pass
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
             names = await _ollama_models(client)

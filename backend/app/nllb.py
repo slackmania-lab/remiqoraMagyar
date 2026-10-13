@@ -59,9 +59,184 @@ def weights_present() -> bool:
     return (NLLB_DIR / "config.json").is_file() and any(NLLB_DIR.glob("*.safetensors")) or (NLLB_DIR / "pytorch_model.bin").is_file()
 
 
-# Frequent unaccented -> accented fixes: many users type without accents and NLLB
-# mistranslates those words (e.g. "betetekkel"). Applied case-insensitively to
-# whole words only; unknown words pass through untouched.
+# Music-domain glossary HU->EN. Applied before NLLB so genre/mood/instrument
+# words come out deterministically right; NLLB then handles whatever remains.
+# Phrases first (longest match wins), then single words.
+_GLOSSARY_PHRASES = {
+    "tiszta énekhangon": "with clean vocals",
+    "tiszta énekhanggal": "with clean vocals",
+    "női énekkel": "with female vocals",
+    "női énekhangon": "with female vocals",
+    "férfi énekkel": "with male vocals",
+    "férfi énekhangon": "with male vocals",
+    "férfihangon": "with male vocals",
+    "lassú tempóban": "at a slow tempo",
+    "gyors tempóban": "at a fast tempo",
+    "közepes tempóban": "at a medium tempo",
+    "pörgős ritmussal": "with a driving rhythm",
+    "élő dobokkal": "with live drums",
+    "suttogós vokállal": "with whispered vocals",
+    "gyerekkórussal": "with a children's choir",
+    "torz vokállal": "with distorted vocals",
+    "dübörgő basszussal": "with thundering bass",
+    "visszhangos gitárral": "with echoing guitar",
+    "csiszolt produkció": "polished production",
+    "nyers hangzással": "with a raw sound",
+    "telt hangzással": "with a full sound",
+    "éjszakai város": "night city",
+    "csillagos ég": "starry sky",
+    "kis kocsma": "small pub",
+    "elhagyott gyár": "abandoned factory",
+    "hóesés": "falling snow",
+    "naplemente": "sunset",
+    "tábortűz": "campfire",
+    "80-as évek": "80s",
+    "60-as évek": "60s",
+    "70-es évek": "70s",
+    "középkori hangulat": "medieval atmosphere",
+    "egy esős kedden": "on a rainy tuesday",
+    "holdtöltekor": "at full moon",
+    "hajnal előtt": "before dawn",
+    "éjfél után": "after midnight",
+    "szilveszter éjjelén": "on new year's eve",
+    "tél derekán": "in deep winter",
+    "szerelem első látásra": "love at first sight",
+    "utolsó tánc": "last dance",
+    "kölcsönkapott kabát": "borrowed coat",
+    "törött óra": "broken clock",
+    "megfakult fénykép": "faded photograph",
+    "elveszett kulcs": "lost key",
+    "régi bakelit": "old vinyl",
+    "papírhajó": "paper boat",
+    "üres boríték": "empty envelope",
+    "rozsdás bicikli": "rusty bicycle",
+    "lejárt vonatjegy": "expired train ticket",
+    "recsegő rádió": "crackling radio",
+    "poros padlásláda": "dusty attic trunk",
+    "befejezetlen levél": "unfinished letter",
+    "tengerészcsomó": "sailor's knot",
+    "kinyílt esernyő": "opened umbrella",
+    "villanypózna fénye": "lamppost light",
+    "folyóparti pad": "riverside bench",
+    "templomtorony": "church tower",
+    "tanyasi udvar": "farmyard",
+    "szőlőhegy": "vineyard hill",
+    "panelrengeteg": "housing estate maze",
+    "kórházi folyosó": "hospital corridor",
+    "éjjeli benzinkút": "night gas station",
+    "néptelen strand": "empty beach",
+    "bezárt mozi": "closed cinema",
+    "üres játszótér": "empty playground",
+    "kihűlt kávé": "cold coffee",
+    "elhagyott kikötő": "abandoned harbor",
+    "csonka hold": "crescent moon",
+    "vasárnapi piac": "sunday market",
+    "ködös folyópart": "foggy riverside",
+    "rozsdás híd": "rusty bridge",
+    "szabadságvágy": "longing for freedom",
+}
+
+_GLOSSARY_WORDS = {
+    # moods
+    "szomorú": "sad", "vidám": "cheerful", "epikus": "epic", "sötét": "dark",
+    "világos": "bright", "álmodozó": "dreamy", "vad": "wild", "nyugodt": "calm",
+    "melankolikus": "melancholic", "ünnepélyes": "festive", "lázadó": "rebellious",
+    "nosztalgikus": "nostalgic", "sejtelmes": "mysterious", "játékos": "playful",
+    "drámai": "dramatic", "törékeny": "fragile", "büszke": "proud",
+    "fájdalmas": "painful", "reményteli": "hopeful", "baljós": "ominous",
+    "mámoros": "ecstatic", "higgadt": "composed", "szilaj": "fiery",
+    "bensőséges": "intimate", "fenyegető": "threatening", "fénylő": "radiant",
+    "keserédes": "bittersweet", "pajkos": "mischievous", "komor": "gloomy",
+    "lebegő": "floating", "tüzes": "fiery", "erős": "strong", "lágy": "soft",
+    "kemény": "hard", "csendes": "quiet", "hangos": "loud",
+    # music nouns
+    "dal": "song", "zene": "music", "dallam": "melody", "dallamos": "melodic",
+    "ritmus": "rhythm", "ritmusos": "rhythmic", "tempó": "tempo",
+    "hangzás": "sound", "produkció": "production", "ballada": "ballad",
+    "keringő": "waltz", "rock": "rock", "metal": "metal",
+    # instruments
+    "gitár": "guitar", "gitárral": "with guitar", "zongora": "piano",
+    "hegedű": "violin", "dob": "drums", "dobokkal": "with drums",
+    "harmonika": "accordion", "furulya": "flute", "szaxofon": "saxophone",
+    "cselló": "cello", "hárfa": "harp", "trombita": "trumpet",
+    "bendzsó": "banjo", "cimbalom": "cimbalom", "basszusgitár": "bass guitar",
+    "basszus": "bass", "basszussal": "with bass", "szintetizátor": "synthesizer",
+    "brácsa": "viola", "nagybőgő": "double bass", "klarinét": "clarinet",
+    "oboa": "oboe", "orgona": "organ", "szájharmonika": "harmonica",
+    "ukulele": "ukulele", "mandolin": "mandolin", "tambura": "tambura",
+    "hegedűvel": "with violin", "zongorával": "with piano",
+    # vocals
+    "ének": "vocals", "énekkel": "with vocals", "énekhang": "vocal",
+    "női": "female", "férfi": "male", "kórus": "choir", "kórussal": "with choir",
+    "énekes": "singer", "énekesnő": "female singer", "vokál": "backing vocals",
+    # images
+    "eső": "rain", "város": "city", "tenger": "sea", "hegyek": "mountains",
+    "hegy": "mountain", "vonat": "train", "kikötő": "harbor", "sivatag": "desert",
+    "erdő": "forest", "folyó": "river", "ég": "sky", "csillag": "star",
+    "csillagos": "starry", "köd": "fog", "ködös": "foggy", "tűz": "fire",
+    "hó": "snow", "nap": "sun", "hold": "moon", "szél": "wind", "víz": "water",
+    "föld": "earth", "tó": "lake", "tengerpart": "seashore", "híd": "bridge",
+    "sziget": "island", "templom": "church", "kastély": "castle", "piac": "market",
+    "metró": "metro", "vihar": "storm", "hajnal": "dawn", "alkonyat": "dusk",
+    "este": "evening", "reggel": "morning", "éj": "night", "éjszaka": "night",
+    "éjfél": "midnight",
+    # feelings/things
+    "szív": "heart", "szerelem": "love", "fájdalom": "pain", "öröm": "joy",
+    "bánat": "sorrow", "remény": "hope", "emlék": "memory", "álom": "dream",
+    "élet": "life", "halál": "death", "múlt": "past", "jövő": "future",
+    "magány": "solitude", "egyedül": "alone", "otthon": "home", "haza": "home",
+    "út": "road", "szabadság": "freedom",
+    # time/seasons
+    "tavasz": "spring", "nyár": "summer", "ősz": "autumn", "tél": "winter",
+    "hétfő": "monday", "kedd": "tuesday", "márciusban": "in march",
+    # verbs/adverbs
+    "száguldva": "speeding", "vágtatva": "galloping", "lüktetve": "pulsing",
+    "andalogva": "strolling", "lassan": "slowly", "halkan": "quietly",
+    "hangosan": "loudly",
+}
+
+
+def _apply_glossary(text: str) -> str:
+    lowered = text.lower()
+    for phrase in sorted(_GLOSSARY_PHRASES, key=len, reverse=True):
+        if phrase in lowered:
+            lowered = lowered.replace(phrase, _GLOSSARY_PHRASES[phrase])
+    out: list[str] = []
+    for tok in lowered.split():
+        m = re.match(r"^(\W*)(.*?)(\W*)$", tok, flags=re.UNICODE)
+        if not m:
+            out.append(tok)
+            continue
+        pre, core, post = m.groups()
+        out.append(f"{pre}{_GLOSSARY_WORDS.get(core, core)}{post}")
+    return " ".join(out)
+
+
+def _has_hungarian_left(text: str) -> bool:
+    for tok in text.split():
+        core = re.sub(r"^\W+|\W+$", "", tok.lower(), flags=re.UNICODE)
+        if not core:
+            continue
+        if any(ch in _HU_CHARS for ch in core):
+            return True
+        if core in _ACCENT_MAP or core in _HU_STOP:
+            return True
+    return False
+
+
+def pretranslate(text: str) -> tuple[str, bool]:
+    """Deterministic Hungarian->English vocabulary pass (accents + glossary).
+
+    Returns (text, has_hungarian_left). Safe to run before either engine:
+    known music words become English, the rest stays for NLLB/LLM.
+    """
+    cleaned = " ".join(text.split())
+    if not cleaned:
+        return "", False
+    out = _apply_glossary(_restore_accents(cleaned))
+    out = " ".join(out.split())
+    return out, _has_hungarian_left(out)
+
 _ACCENT_MAP = {
     "szomoru": "szomorú", "lassu": "lassú", "gyors": "gyors", "sotet": "sötét",
     "vilagos": "világos", "dallam": "dallam", "dallamvilag": "dallamvilág",
@@ -195,19 +370,37 @@ def translate_to_english(text: str, src: str = "auto") -> tuple[str, str]:
     parts = [p.strip() for p in re.split(r"[,\n]+", cleaned) if p.strip()]
     if not parts:
         return "", ""
+    # Group CONSECUTIVE Hungarian segments into one chunk: single words
+    # without context mistranslate badly ("száguldva" -> "of a width of
+    # <= 10 mm"), while the same words together translate fine. Detection
+    # runs on the RAW part (glossary output would hide Hungarian markers);
+    # glossary text feeds NLLB, which then only sees what is still Hungarian.
+    chunks: list[tuple[bool, str]] = []
+    for part in parts:
+        is_hu = looks_hungarian(part)
+        # Glossarized text feeds NLLB; untouched original passes through, so
+        # English input keeps its exact casing.
+        gloss, _ = pretranslate(part)
+        if is_hu and chunks and chunks[-1][0]:
+            chunks[-1] = (True, chunks[-1][1] + ", " + gloss)
+        else:
+            chunks.append((is_hu, gloss if is_hu else part))
     translated_any = False
     done: list[str] = []
     with _lock:
-        for part in parts:
-            if looks_hungarian(part):
-                try:
-                    out = _translate_one(_restore_accents(part), SUPPORTED_LANGS["hu"][0])
-                except RuntimeError:
-                    out = part
-                done.append(out)
-                translated_any = True
-            else:
-                done.append(part)
+        for is_hu, chunk in chunks:
+            if not is_hu:
+                done.append(chunk)
+                continue
+            translated_any = True
+            if not _has_hungarian_left(chunk):
+                done.append(chunk)
+                continue
+            try:
+                out = _translate_one(chunk, SUPPORTED_LANGS["hu"][0])
+            except RuntimeError:
+                out = chunk
+            done.append(out)
     en = ", ".join(done)
     if translated_any:
         return _guard(en, cleaned, "hu")
