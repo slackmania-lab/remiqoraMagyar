@@ -245,6 +245,9 @@ LYRICS_LANGS: dict[str, str] = {
     "it": "Italian",
     "pt": "Portuguese",
     "es": "Spanish",
+    "hi": "Hindi",
+    "sa": "Sanskrit",
+    "sw": "Swahili",
 }
 
 LYRIC_DEFAULT_MODELS = ("qwen3:8b", "qwen3.5:9b", "llama3.1:8b")

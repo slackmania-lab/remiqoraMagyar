@@ -44,6 +44,9 @@ export const LYRIC_LANGS: LyricLang[] = [
   { code: 'it', label: 'Italiano' },
   { code: 'pt', label: 'Português' },
   { code: 'es', label: 'Español' },
+  { code: 'hi', label: 'हिन्दी' },
+  { code: 'sa', label: 'संस्कृतम्' },
+  { code: 'sw', label: 'Kiswahili' },
 ]
 
 export interface LyricsResult {
