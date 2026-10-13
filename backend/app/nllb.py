@@ -142,45 +142,76 @@ def _ensure_loaded() -> None:
     _model.eval()
 
 
+def _translate_one(text: str, nllb_code: str) -> str:
+    """Translate one (already accent-restored) chunk with NLLB."""
+    import torch
+
+    _ensure_loaded()
+    _tokenizer.src_lang = nllb_code
+    inputs = _tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+    forced_bos = _tokenizer.convert_tokens_to_ids(DST_EN)
+    with torch.no_grad():
+        out = _model.generate(
+            **inputs,
+            forced_bos_token_id=forced_bos,
+            max_length=512,
+        )
+    en = _tokenizer.batch_decode(out, skip_special_tokens=True)[0]
+    # NLLB sometimes decorates music-related lines with stray note symbols.
+    en = re.sub(r"^[^A-Za-z0-9\u00C0-\u017F]+", "", en.strip())
+    en = re.sub(r"[^A-Za-z0-9\u00C0-\u017F).!?\"]+$", "", en.strip())
+    return " ".join(en.split())
+
+
+def _guard(en: str, fallback: str, iso: str) -> tuple[str, str]:
+    # Last-resort guard: NLLB occasionally answers instead of translating
+    # ("I'm not sure...", "Sorry..."). A translation must never read like a
+    # chatbot reply — fall back to the input.
+    if re.search(r"(?i)\bi['’]m not sure\b|\bsorry\b|\bas an ai\b|\bi cannot\b|\bi can't\b", en):
+        return fallback, iso
+    return en, iso
+
+
 def translate_to_english(text: str, src: str = "auto") -> tuple[str, str]:
-    """Return (english_text, iso_src_lang). 'en' passes through; any other
-    supported ISO code translates from that language; 'auto' (default) uses
-    the Hungarian-vs-English heuristic below."""
+    """Return (english_text, iso_src_lang).
+
+    "auto" (default) works comma-segment by comma-segment: Hungarian segments
+    go through NLLB, the rest passes through untouched. This keeps mixed
+    inputs ("hardcore trap, indiai dallamvilág") fully English without the
+    all-or-nothing guessing that either hallucinates or echoes.
+    An explicit ISO code translates the whole text from that language.
+    """
     cleaned = " ".join(text.split())
     if not cleaned:
         return "", ""
     iso = (src or "auto").strip().lower()
-    if iso == "auto":
-        iso = "hu" if looks_hungarian(cleaned) else "en"
-    if iso == "en" or iso not in SUPPORTED_LANGS:
-        return cleaned, "en"
-    if iso == "hu":
-        cleaned = _restore_accents(cleaned)
-    nllb_code = SUPPORTED_LANGS[iso][0]
+    if iso != "auto":
+        if iso == "en" or iso not in SUPPORTED_LANGS:
+            return cleaned, "en"
+        text_in = _restore_accents(cleaned) if iso == "hu" else cleaned
+        with _lock:
+            out = _translate_one(text_in, SUPPORTED_LANGS[iso][0])
+        return _guard(out, cleaned, iso)
+    parts = [p.strip() for p in re.split(r"[,\n]+", cleaned) if p.strip()]
+    if not parts:
+        return "", ""
+    translated_any = False
+    done: list[str] = []
     with _lock:
-        _ensure_loaded()
-        import torch
-
-        _tokenizer.src_lang = nllb_code
-        inputs = _tokenizer(cleaned, return_tensors="pt", truncation=True, max_length=512)
-        forced_bos = _tokenizer.convert_tokens_to_ids(DST_EN)
-        with torch.no_grad():
-            out = _model.generate(
-                **inputs,
-                forced_bos_token_id=forced_bos,
-                max_length=512,
-            )
-        en = _tokenizer.batch_decode(out, skip_special_tokens=True)[0]
-    # NLLB sometimes decorates music-related lines with stray note symbols.
-    en = re.sub(r"^[^A-Za-z0-9\u00C0-\u017F]+", "", en.strip())
-    en = re.sub(r"[^A-Za-z0-9\u00C0-\u017F).!?\"]+$", "", en.strip())
-    en = " ".join(en.split())
-    # Last-resort guard: NLLB occasionally answers instead of translating
-    # ("I'm not sure...", "Sorry..."). A translation must never read like a
-    # chatbot reply — fall back to the (already accent-restored) input.
-    if re.search(r"(?i)\bi['’]m not sure\b|\bsorry\b|\bas an ai\b|\bi cannot\b|\bi can't\b", en):
-        return cleaned, iso
-    return en, iso
+        for part in parts:
+            if looks_hungarian(part):
+                try:
+                    out = _translate_one(_restore_accents(part), SUPPORTED_LANGS["hu"][0])
+                except RuntimeError:
+                    out = part
+                done.append(out)
+                translated_any = True
+            else:
+                done.append(part)
+    en = ", ".join(done)
+    if translated_any:
+        return _guard(en, cleaned, "hu")
+    return cleaned, "en"
 
 
 def local_dir() -> Path:
