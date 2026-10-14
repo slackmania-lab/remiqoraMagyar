@@ -154,6 +154,49 @@ _GLOSSARY_WORDS = {
     "ritmus": "rhythm", "ritmusos": "rhythmic", "tempó": "tempo",
     "hangzás": "sound", "produkció": "production", "ballada": "ballad",
     "keringő": "waltz", "rock": "rock", "metal": "metal",
+    "betét": "interlude", "betétek": "interludes",
+    "betéttel": "with an interlude", "betétekkel": "with interludes",
+    # adjectives & production
+    "elektronikus": "electronic", "akusztikus": "acoustic",
+    "elektromos": "electric", "modern": "modern", "hagyományos": "traditional",
+    "klasszikus": "classic", "népi": "folk", "régi": "old", "új": "new",
+    "fiatal": "young", "öreg": "old", "nagy": "great", "kis": "small",
+    "kicsi": "small", "hosszú": "long", "rövid": "short", "magas": "high",
+    "mély": "deep", "vastag": "thick", "vékony": "thin", "sima": "smooth",
+    "érdes": "rough", "éles": "sharp", "tompa": "muted",
+    "piszkos": "dirty", "szürke": "grey", "fekete": "black", "fehér": "white",
+    "piros": "red", "vörös": "red", "kék": "blue", "zöld": "green",
+    "sárga": "yellow", "arany": "golden", "ezüst": "silver",
+    "tavaszi": "spring", "nyári": "summer", "őszi": "autumn", "téli": "winter",
+    "havas": "snowy", "esős": "rainy", "szeles": "windy", "napos": "sunny",
+    "felhős": "cloudy", "csillagos": "starry",
+    # song parts & music craft
+    "refrén": "chorus", "verzé": "verse", "verze": "verse", "intró": "intro",
+    "outró": "outro", "szóló": "solo", "híd": "bridge", "stílus": "style",
+    "műfaj": "genre", "korszak": "era", "hangulat": "mood",
+    "atmoszféra": "atmosphere", "energia": "energy", "erő": "power",
+    "dinamika": "dynamics", "feszültség": "tension", "csúcspont": "climax",
+    "hangszer": "instrument", "hangszerelés": "arrangement",
+    "zenekar": "band", "együttes": "ensemble",
+    # people & body & world
+    "lány": "girl", "fiú": "boy", "nő": "woman", "férfi": "man",
+    "gyerek": "child", "barát": "friend", "ellenség": "enemy",
+    "isten": "god", "ördög": "devil", "angyal": "angel", "király": "king",
+    "katona": "soldier", "tengerész": "sailor", "vándor": "wanderer",
+    "idegen": "stranger", "hős": "hero", "szem": "eye", "könny": "tear",
+    "vér": "blood", "kéz": "hand", "ház": "house", "pénz": "money",
+    "autó": "car", "utca": "street", "tér": "square", "város": "city",
+    "falu": "village", "buli": "party", "koncert": "concert",
+    "fesztivál": "festival", "klub": "club", "bár": "bar",
+    "ünnep": "celebration", "esküvő": "wedding", "temetés": "funeral",
+    # time & adverbs
+    "reggel": "morning", "dél": "noon", "délután": "afternoon",
+    "éjfél": "midnight", "tegnap": "yesterday", "ma": "today",
+    "holnap": "tomorrow", "mindig": "always", "soha": "never",
+    "néha": "sometimes", "gyakran": "often", "ritkán": "rarely",
+    "most": "now", "már": "already", "még": "still", "megint": "again",
+    "újra": "anew", "lassan": "slowly", "halkan": "quietly",
+    "hangosan": "loudly",
     # instruments
     "gitár": "guitar", "gitárral": "with guitar", "zongora": "piano",
     "hegedű": "violin", "dob": "drums", "dobokkal": "with drums",
@@ -372,30 +415,35 @@ def translate_to_english(text: str, src: str = "auto") -> tuple[str, str]:
         return "", ""
     # Group CONSECUTIVE Hungarian segments into one chunk: single words
     # without context mistranslate badly ("száguldva" -> "of a width of
-    # <= 10 mm"), while the same words together translate fine. Detection
-    # runs on the RAW part (glossary output would hide Hungarian markers);
-    # glossary text feeds NLLB, which then only sees what is still Hungarian.
-    chunks: list[tuple[bool, str]] = []
+    # <= 10 mm"), while the same words together translate fine. Glossary
+    # output goes DIRECTLY to the result (never mixed into NLLB input —
+    # mixed-language chunks hallucinate); NLLB only ever sees coherent raw
+    # Hungarian for the words the glossary does not know.
+    chunks: list[tuple[str, str]] = []  # (kind, text): kind in {"gloss", "nllb", "raw"}
     for part in parts:
-        is_hu = looks_hungarian(part)
-        # Glossarized text feeds NLLB; untouched original passes through, so
-        # English input keeps its exact casing.
         gloss, _ = pretranslate(part)
-        if is_hu and chunks and chunks[-1][0]:
-            chunks[-1] = (True, chunks[-1][1] + ", " + gloss)
+        # Glossary hit beyond mere casing ("dallamos" -> "melodic", but not
+        # "Dark" -> "dark"): Hungarian was in there even with no markers.
+        if gloss.lower() != part.lower() and not _has_hungarian_left(gloss):
+            kind, text = "gloss", gloss
+        elif looks_hungarian(part):
+            kind, text = "nllb", _restore_accents(part)
         else:
-            chunks.append((is_hu, gloss if is_hu else part))
+            kind, text = "raw", part
+        if kind == "nllb" and chunks and chunks[-1][0] == "nllb":
+            chunks[-1] = ("nllb", chunks[-1][1] + ", " + text)
+        else:
+            chunks.append((kind, text))
     translated_any = False
     done: list[str] = []
     with _lock:
-        for is_hu, chunk in chunks:
-            if not is_hu:
+        for kind, chunk in chunks:
+            if kind != "nllb":
+                if kind == "gloss":
+                    translated_any = True
                 done.append(chunk)
                 continue
             translated_any = True
-            if not _has_hungarian_left(chunk):
-                done.append(chunk)
-                continue
             try:
                 out = _translate_one(chunk, SUPPORTED_LANGS["hu"][0])
             except RuntimeError:
