@@ -403,6 +403,12 @@ def translate_to_english(text: str, src: str = "auto") -> tuple[str, str]:
     if not cleaned:
         return "", ""
     iso = (src or "auto").strip().lower()
+    if iso == "hu":
+        # Explicit Hungarian behaves exactly like auto: per-segment detection.
+        # Forcing the whole mixed text through hun_Latn hallucinates
+        # ("Electronic" -> dictionary definition). The dropdown stays
+        # meaningful for the other languages (whole-text from that language).
+        iso = "auto"
     if iso != "auto":
         if iso == "en" or iso not in SUPPORTED_LANGS:
             return cleaned, "en"
