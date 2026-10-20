@@ -6,9 +6,11 @@ dir) is what makes "one project, one place for everything it generated" true.
 """
 from __future__ import annotations
 
+import functools
 import json
 import shutil
 import sqlite3
+import threading
 import time
 from pathlib import Path
 from typing import Any, Optional
@@ -19,8 +21,22 @@ DB_PATH = DATA_DIR / "aicollector.db"
 FILES_DIR = DATA_DIR / "files"
 
 _db: Optional[sqlite3.Connection] = None
+# One connection serves every thread (FastAPI runs sync routes and asyncio.to_thread work in a pool), and a
+# sqlite3 connection must not be used by two threads at once: parallel requests at startup failed with
+# "bad parameter or other API misuse". Every function here holds this lock while it uses the connection;
+# it is reentrant because they call each other (update_project reads the project first, ...).
+_lock = threading.RLock()
 
 
+def _locked(fn):
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        with _lock:
+            return fn(*args, **kwargs)
+    return wrapper
+
+
+@_locked
 def get_db() -> sqlite3.Connection:
     global _db
     if _db is None:
@@ -99,6 +115,7 @@ def midi_dir(model: str, track_id: int) -> Path:
     return FILES_DIR / model / "midi" / str(track_id)
 
 
+@_locked
 def insert_track(
     *,
     model: str,
@@ -132,6 +149,7 @@ def insert_track(
     return cur.lastrowid
 
 
+@_locked
 def list_tracks(model: Optional[str] = None) -> list[sqlite3.Row]:
     db = get_db()
     if model:
@@ -139,11 +157,13 @@ def list_tracks(model: Optional[str] = None) -> list[sqlite3.Row]:
     return db.execute("SELECT * FROM tracks ORDER BY id DESC").fetchall()
 
 
+@_locked
 def get_track(track_id: int) -> Optional[sqlite3.Row]:
     db = get_db()
     return db.execute("SELECT * FROM tracks WHERE id = ?", (track_id,)).fetchone()
 
 
+@_locked
 def update_track_title(track_id: int, title: str) -> bool:
     db = get_db()
     if not get_track(track_id):
@@ -153,6 +173,7 @@ def update_track_title(track_id: int, title: str) -> bool:
     return True
 
 
+@_locked
 def set_track_favorite(track_id: int, favorite: bool) -> bool:
     db = get_db()
     if not get_track(track_id):
@@ -162,12 +183,14 @@ def set_track_favorite(track_id: int, favorite: bool) -> bool:
     return True
 
 
+@_locked
 def set_track_cover(track_id: int, path: Optional[str]) -> None:
     db = get_db()
     db.execute("UPDATE tracks SET cover_path = ? WHERE id = ?", (path, track_id))
     db.commit()
 
 
+@_locked
 def update_track_stems(track_id: int, stems: Optional[dict[str, str]]) -> None:
     db = get_db()
     db.execute(
@@ -177,11 +200,13 @@ def update_track_stems(track_id: int, stems: Optional[dict[str, str]]) -> None:
     db.commit()
 
 
+@_locked
 def get_mix_settings(track_id: int) -> Optional[dict]:
     row = get_track(track_id)
     return json.loads(row["mix_settings_json"]) if row and row["mix_settings_json"] else None
 
 
+@_locked
 def update_track_mix_settings(track_id: int, settings: Optional[dict]) -> None:
     db = get_db()
     db.execute(
@@ -191,6 +216,7 @@ def update_track_mix_settings(track_id: int, settings: Optional[dict]) -> None:
     db.commit()
 
 
+@_locked
 def delete_track_stems(track_id: int) -> bool:
     row = get_track(track_id)
     if not row or not row["stems_json"]:
@@ -200,11 +226,13 @@ def delete_track_stems(track_id: int) -> bool:
     return True
 
 
+@_locked
 def get_track_midi(track_id: int) -> dict[str, str]:
     row = get_track(track_id)
     return json.loads(row["midi_json"]) if row and row["midi_json"] else {}
 
 
+@_locked
 def set_track_midi_entry(track_id: int, source: str, path: Optional[Path]) -> None:
     """Add or drop one source's .mid without touching the others - each source
     (full mix, and each stem) is transcribed by its own job."""
@@ -221,6 +249,7 @@ def set_track_midi_entry(track_id: int, source: str, path: Optional[Path]) -> No
     db.commit()
 
 
+@_locked
 def delete_track_midi(track_id: int) -> bool:
     row = get_track(track_id)
     if not row or not row["midi_json"]:
@@ -232,6 +261,7 @@ def delete_track_midi(track_id: int) -> bool:
     return True
 
 
+@_locked
 def insert_project(*, name: str, data: dict) -> int:
     db = get_db()
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -243,16 +273,19 @@ def insert_project(*, name: str, data: dict) -> int:
     return cur.lastrowid
 
 
+@_locked
 def list_projects() -> list[sqlite3.Row]:
     db = get_db()
     return db.execute("SELECT id, created_at, updated_at, name FROM projects ORDER BY updated_at DESC").fetchall()
 
 
+@_locked
 def get_project(project_id: int) -> Optional[sqlite3.Row]:
     db = get_db()
     return db.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
 
 
+@_locked
 def update_project(project_id: int, *, name: Optional[str], data: Optional[dict]) -> None:
     db = get_db()
     row = get_project(project_id)
@@ -268,6 +301,7 @@ def update_project(project_id: int, *, name: Optional[str], data: Optional[dict]
     db.commit()
 
 
+@_locked
 def delete_project(project_id: int) -> bool:
     db = get_db()
     if not get_project(project_id):
@@ -277,6 +311,7 @@ def delete_project(project_id: int) -> bool:
     return True
 
 
+@_locked
 def delete_track(track_id: int) -> bool:
     db = get_db()
     row = get_track(track_id)
@@ -302,11 +337,13 @@ def delete_track(track_id: int) -> bool:
     return True
 
 
+@_locked
 def get_setting(key: str, default: str = "") -> str:
     row = get_db().execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
     return row["value"] if row else default
 
 
+@_locked
 def set_setting(key: str, value: str) -> None:
     db = get_db()
     db.execute(
