@@ -255,7 +255,8 @@ function muteVocalPlan() {
   else formError.value = t('yueGen.abcExtendFailed')
 }
 
-function onPromptApply(r: { style_en: string; lyrics: string; simple: string }) {  if (r.style_en) style.value = r.style_en
+function onPromptApply(r: { style_en: string; lyrics: string; simple: string }) {
+  if (r.style_en) style.value = r.style_en
   // Only fill lyrics when the field is empty — never overwrite the user's own text.
   if (r.lyrics && !lyrics.value.trim()) {
     lyrics.value = r.lyrics
@@ -266,10 +267,37 @@ function onPromptApply(r: { style_en: string; lyrics: string; simple: string }) 
   }
 }
 
+const abcBusy = ref(false)
+
+/**
+ * Score-only run (audio.cpp v0.9+ `stop_after=abc`): writes just the symbolic
+ * plan in ~20 seconds. The result lands in the ABC box, where it can be
+ * reviewed, extended (×2/×3) or muted before the audio pass.
+ */
+async function planOnly() {
+  formError.value = ''
+  if (!style.value.trim()) {
+    formError.value = t('yueGen.enterStyle')
+    return
+  }
+  abcBusy.value = true
+  try {
+    const planSeed: number = randomSeed.value ? Math.floor(Math.random() * 2147483647) : (Number.isFinite(seed.value) ? seed.value : 831001)
+    const result = await api.generateAbcOnly(lyrics.value.trim(), planSeed, buildOptions(), precision.value)
+    const plan = api.abcFromResult(result)
+    if (!plan.trim()) throw new Error(t('yueGen.noAbcReturned'))
+    abc.value = plan
+    cot.value = 'full'
+  } catch (err) {
+    formError.value = err instanceof Error ? err.message : String(err)
+  } finally {
+    abcBusy.value = false
+  }
+}
+
 function onInstrumentalChange() {
-  // The [instrumental] marker biases YuE2 toward no-vocal output. Without the
-  // dedicated instrumental LoRA adapter some vocal traces may remain.
-  if (instrumental.value && !lyrics.value.trim()) lyrics.value = '[instrumental]'
+  // v0.9+: a genuinely empty lyrics field means native instrumental
+  // generation, so no [instrumental] marker is needed anymore.
   // The instrumental adapter requires the full CoT route (melody+chords plan).
   if (instrumental.value && cot.value === 'off') cot.value = 'full'
 }
@@ -294,8 +322,10 @@ function buildOptions(): GenerateOptions {
 
 async function submit() {
   formError.value = ''
-  const finalLyrics = lyrics.value.trim() || (instrumental.value ? '[instrumental]' : '')
-  if (!finalLyrics) {
+  // Instrumental: send NO lyrics at all — v0.9 renders that natively without
+  // vocals (no [instrumental] marker needed). Typed lyrics still win in vocal mode.
+  const finalLyrics = instrumental.value ? '' : lyrics.value.trim()
+  if (!instrumental.value && !finalLyrics) {
     formError.value = t('yueGen.enterLyrics')
     return
   }
@@ -524,8 +554,7 @@ async function onRecipeFile(e: Event) {
           <select v-model="cot" class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text">
             <option v-for="o in COT_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
           </select>
-        </div>
-        <div>
+        </div>        <div>
           <label class="mb-1 block text-[13px] font-medium text-text">{{ t('yueGen.precisionLabel') }}</label>
           <select v-model="precision" class="w-full rounded-lg border border-border bg-panel-2 p-2 text-sm text-text">
             <option value="q8_0">q8_0</option>
@@ -534,6 +563,19 @@ async function onRecipeFile(e: Event) {
         </div>
       </div>
       <p class="text-xs text-text-dim">{{ COT_HINTS[cot] }}</p>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-dim hover:bg-panel-2 hover:text-text disabled:opacity-50"
+          :title="t('yueGen.planOnlyHint')"
+          :disabled="abcBusy"
+          @click="planOnly"
+        >
+          {{ abcBusy ? t('yueGen.planOnlyBusy') : `🎼 ${t('yueGen.planOnly')}` }}
+        </button>
+        <span class="text-[11px] text-text-dim">{{ t('yueGen.planOnlyNote') }}</span>
+      </div>
 
       <div v-if="cot !== 'off'" class="space-y-3 rounded-lg border border-border bg-panel-2/50 p-3">
         <div>

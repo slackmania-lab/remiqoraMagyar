@@ -201,6 +201,22 @@ export async function generateTrack(lyrics: string, seed: number, options: Gener
   return runTask(spec.id, { lyrics, seed, options }, signal)
 }
 
+/**
+ * Score-only run (audio.cpp v0.9+): `stop_after=abc` writes just the symbolic
+ * plan, so a full ABC score comes back in ~20s instead of minutes of audio.
+ */
+export async function generateAbcOnly(
+  lyrics: string,
+  seed: number,
+  options: GenerateOptions,
+  precision: 'q8_0' | 'q4_0',
+  signal?: AbortSignal,
+): Promise<TaskRunResult> {
+  const spec = await getYue2ModelSpec()
+  await ensureLoaded(spec, precisionSessionOptions(precision))
+  return runTask(spec.id, { lyrics, seed, options: { ...options, cot: 'full', stop_after: 'abc' } }, signal)
+}
+
 export async function extractAbcFromAudio(audioPath: string): Promise<TaskRunResult> {
   const spec = await getSheetSageModelSpec()
   await ensureLoaded(spec)
