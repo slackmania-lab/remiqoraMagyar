@@ -163,7 +163,10 @@ export function precisionSessionOptions(precision: 'q8_0' | 'q4_0'): Record<stri
 export const INSTRUMENTAL_LORA_FILE = 'ar_lora_inst_v3abc.safetensors'
 
 export function instrumentalSessionOptions(): Record<string, string> {
-  return { 'yue2.lora': INSTRUMENTAL_LORA_FILE, 'yue2.lora_scale': '1.0' }
+  // audio.cpp v0.9.x renamed the session options: `lora`/`lora_scale` are now
+  // `ar_lora`/`ar_lora_scale` (AR = planning/melody), with a separate
+  // `nar_lora` for the acoustic stage. The old names are silently ignored.
+  return { 'yue2.ar_lora': INSTRUMENTAL_LORA_FILE, 'yue2.ar_lora_scale': '1.0' }
 }
 
 export async function uploadFile(file: File): Promise<string> {
